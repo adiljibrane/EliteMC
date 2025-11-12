@@ -69,7 +69,7 @@ export const renderPropertyCards = (properties, container) => {
 
     return `
       <div class="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer"
-           onclick="window.location.href='/frontend/property.html?id=${property.id}'">
+           onclick="window.location.href='/property?id=${property.id}'">
         <img src="${imageUrl}" alt="${property.title}"
              class="w-full h-48 object-cover"
              onerror="this.src='/assets/placeholders/property.jpg'">
@@ -104,7 +104,7 @@ export const renderPropertyCards = (properties, container) => {
               <p class="text-lg font-bold text-indigo-600">${formatMUR(property.price_per_lot)}</p>
             </div>
             <button class="px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition"
-                    onclick="event.stopPropagation(); window.location.href='/frontend/property.html?id=${property.id}'">
+                    onclick="event.stopPropagation(); window.location.href='/property?id=${property.id}'">
               View Details
             </button>
           </div>

@@ -30,10 +30,10 @@ const updateNavigation = async (session) => {
 
     authLinks.innerHTML = `
       ${userEmail ? `<span class="text-gray-700 hidden md:inline">${user.email}</span>` : ''}
-      <a href="/frontend/properties.html" class="text-gray-700 hover:text-indigo-600 transition">Properties</a>
-      <a href="/frontend/wallet.html" class="text-gray-700 hover:text-indigo-600 transition">Wallet</a>
-      <a href="/frontend/orders.html" class="text-gray-700 hover:text-indigo-600 transition">Orders</a>
-      ${admin ? '<a href="/frontend/admin/dashboard.html" class="text-indigo-600 font-semibold hover:text-indigo-700 transition">Admin</a>' : ''}
+      <a href="/properties" class="text-gray-700 hover:text-indigo-600 transition">Properties</a>
+      <a href="/wallet" class="text-gray-700 hover:text-indigo-600 transition">Wallet</a>
+      <a href="/orders" class="text-gray-700 hover:text-indigo-600 transition">Orders</a>
+      ${admin ? '<a href="/admin/dashboard" class="text-indigo-600 font-semibold hover:text-indigo-700 transition">Admin</a>' : ''}
       <button id="logout-btn" class="px-4 py-2 rounded-xl bg-gray-200 hover:bg-gray-300 transition">
         Logout
       </button>
@@ -43,8 +43,8 @@ const updateNavigation = async (session) => {
     document.getElementById('logout-btn')?.addEventListener('click', handleLogout)
   } else {
     authLinks.innerHTML = `
-      <a href="/frontend/properties.html" class="text-gray-700 hover:text-indigo-600 transition">Properties</a>
-      <a href="/frontend/login.html" class="px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition">
+      <a href="/properties" class="text-gray-700 hover:text-indigo-600 transition">Properties</a>
+      <a href="/login" class="px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition">
         Sign In
       </a>
     `
@@ -60,7 +60,7 @@ export const handleSignIn = async (email, button) => {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: window.location.origin + '/frontend/properties.html',
+        emailRedirectTo: window.location.origin + '/properties',
       },
     })
 
@@ -90,7 +90,7 @@ export const handleSignUp = async (email, fullName, phone, button) => {
           full_name: fullName,
           phone: phone,
         },
-        emailRedirectTo: window.location.origin + '/frontend/properties.html',
+        emailRedirectTo: window.location.origin + '/properties',
       },
     })
 
@@ -141,7 +141,7 @@ export const handleLogout = async () => {
 
     showSuccess('Logged out successfully')
     setTimeout(() => {
-      window.location.href = '/frontend/index.html'
+      window.location.href = '/'
     }, 1000)
   } catch (error) {
     showError(error.message)
@@ -150,7 +150,7 @@ export const handleLogout = async () => {
 
 // ========== Protected Route Guard ==========
 
-export const requireAuth = async (redirectTo = '/frontend/login.html') => {
+export const requireAuth = async (redirectTo = '/login') => {
   const session = await getSession()
   if (!session) {
     window.location.href = redirectTo
@@ -161,7 +161,7 @@ export const requireAuth = async (redirectTo = '/frontend/login.html') => {
 
 // ========== Admin Guard ==========
 
-export const requireAdmin = async (redirectTo = '/frontend/properties.html') => {
+export const requireAdmin = async (redirectTo = '/properties') => {
   const session = await requireAuth()
   if (!session) return false
 

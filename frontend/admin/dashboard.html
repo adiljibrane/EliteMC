@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <base href="/">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - EliteMC</title>
@@ -10,7 +11,7 @@
     <nav class="bg-white shadow-md sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
-                <a href="/frontend/index.html" class="text-2xl font-bold text-indigo-600">EliteMC Admin</a>
+                <a href="/index" class="text-2xl font-bold text-indigo-600">EliteMC Admin</a>
                 <div id="auth-links" class="flex items-center gap-4"></div>
             </div>
         </div>
@@ -26,22 +27,22 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Quick Actions -->
         <div class="grid md:grid-cols-4 gap-6 mb-8">
-            <a href="/frontend/admin/deposits.html" class="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition">
+            <a href="/admin/deposits" class="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition">
                 <div class="text-4xl mb-2">💳</div>
                 <h3 class="text-xl font-bold text-gray-800">Deposits</h3>
                 <p id="pending-deposits" class="text-2xl font-bold text-yellow-600">0 pending</p>
             </a>
-            <a href="/frontend/admin/properties.html" class="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition">
+            <a href="/admin/properties" class="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition">
                 <div class="text-4xl mb-2">🏢</div>
                 <h3 class="text-xl font-bold text-gray-800">Properties</h3>
                 <p id="open-properties" class="text-2xl font-bold text-green-600">0 open</p>
             </a>
-            <a href="/frontend/admin/dividends.html" class="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition">
+            <a href="/admin/dividends" class="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition">
                 <div class="text-4xl mb-2">💰</div>
                 <h3 class="text-xl font-bold text-gray-800">Dividends</h3>
                 <p class="text-sm text-gray-600">Manage payouts</p>
             </a>
-            <a href="/frontend/admin/mint-prep.html" class="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition">
+            <a href="/admin/mint-prep" class="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition">
                 <div class="text-4xl mb-2">🔗</div>
                 <h3 class="text-xl font-bold text-gray-800">Mint Prep</h3>
                 <p class="text-sm text-gray-600">Blockchain ready</p>
@@ -76,9 +77,9 @@
     </div>
 
     <script type="module">
-        import { initAuth, requireAdmin } from '/frontend/js/auth.js'
-        import { fetchDashboardStats, fetchAuditLog } from '/frontend/js/admin.js'
-        import { formatMUR, formatDateTime } from '/frontend/js/ui.js'
+        import { initAuth, requireAdmin } from '/js/auth.js'
+        import { fetchDashboardStats, fetchAuditLog } from '/js/admin.js'
+        import { formatMUR, formatDateTime } from '/js/ui.js'
 
         await requireAdmin()
         initAuth()

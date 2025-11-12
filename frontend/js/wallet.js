@@ -278,7 +278,7 @@ export const renderPortfolio = (portfolio, container) => {
             </div>
           </div>
 
-          <button onclick="window.location.href='/frontend/property.html?id=${item.property_id}'"
+          <button onclick="window.location.href='/property?id=${item.property_id}'"
                   class="mt-4 w-full px-4 py-2 rounded-xl border border-indigo-600 text-indigo-600 hover:bg-indigo-50 transition">
             View Property
           </button>

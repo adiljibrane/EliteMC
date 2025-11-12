@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <base href="/">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EliteMC Cooperative - Property Investment Platform</title>
@@ -30,10 +31,10 @@
                 Buy property lots, earn dividends, and prepare for blockchain-backed tokens.
             </p>
             <div class="flex gap-4 justify-center">
-                <a href="/frontend/properties.html" class="px-8 py-4 bg-white text-indigo-600 rounded-2xl font-semibold hover:bg-gray-100 transition shadow-lg">
+                <a href="/properties" class="px-8 py-4 bg-white text-indigo-600 rounded-2xl font-semibold hover:bg-gray-100 transition shadow-lg">
                     Browse Properties
                 </a>
-                <a href="/frontend/login.html" class="px-8 py-4 bg-transparent border-2 border-white rounded-2xl font-semibold hover:bg-white hover:text-indigo-600 transition">
+                <a href="/login" class="px-8 py-4 bg-transparent border-2 border-white rounded-2xl font-semibold hover:bg-white hover:text-indigo-600 transition">
                     Get Started
                 </a>
             </div>
@@ -74,7 +75,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center mb-12">
                 <h3 class="text-3xl font-bold text-gray-800">Featured Properties</h3>
-                <a href="/frontend/properties.html" class="text-indigo-600 hover:underline font-semibold">View All →</a>
+                <a href="/properties" class="text-indigo-600 hover:underline font-semibold">View All →</a>
             </div>
             <div id="featured-properties" class="grid md:grid-cols-3 gap-8">
                 <!-- Properties will be loaded here -->
@@ -87,7 +88,7 @@
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h3 class="text-4xl font-bold mb-6">Ready to Start Investing?</h3>
             <p class="text-xl mb-8">Join EliteMC Cooperative and build your real estate portfolio today.</p>
-            <a href="/frontend/login.html" class="inline-block px-8 py-4 bg-white text-indigo-600 rounded-2xl font-semibold hover:bg-gray-100 transition shadow-lg">
+            <a href="/login" class="inline-block px-8 py-4 bg-white text-indigo-600 rounded-2xl font-semibold hover:bg-gray-100 transition shadow-lg">
                 Create Free Account
             </a>
         </div>
@@ -102,8 +103,8 @@
     </footer>
 
     <script type="module">
-        import { initAuth } from '/frontend/js/auth.js'
-        import { fetchProperties, renderPropertyCards } from '/frontend/js/properties.js'
+        import { initAuth } from '/js/auth.js'
+        import { fetchProperties, renderPropertyCards } from '/js/properties.js'
 
         // Initialize auth
         initAuth()

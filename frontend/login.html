@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <base href="/">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign In - EliteMC Cooperative</title>
@@ -69,14 +70,14 @@
 
         <!-- Back to Home -->
         <div class="text-center mt-6">
-            <a href="/frontend/index.html" class="text-gray-600 hover:text-gray-800 transition">
+            <a href="/index" class="text-gray-600 hover:text-gray-800 transition">
                 ← Back to Home
             </a>
         </div>
     </div>
 
     <script type="module">
-        import { handleSignIn, handleSignUp } from '/frontend/js/auth.js'
+        import { handleSignIn, handleSignUp } from '/js/auth.js'
 
         // Tab switching
         const signinTab = document.getElementById('signin-tab')

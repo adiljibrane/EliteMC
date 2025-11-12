@@ -10,7 +10,7 @@ import { showSuccess, showError, formatMUR, formatDate } from './ui.js'
 export const requireAdmin = async () => {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
-    window.location.href = '/frontend/login.html'
+    window.location.href = '/login'
     return false
   }
 
@@ -18,7 +18,7 @@ export const requireAdmin = async () => {
   if (!isAdmin) {
     showError('Admin access required')
     setTimeout(() => {
-      window.location.href = '/frontend/properties.html'
+      window.location.href = '/properties'
     }, 1500)
     return false
   }

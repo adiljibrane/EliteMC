@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <base href="/">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mint Preparation - EliteMC Admin</title>
@@ -10,7 +11,7 @@
     <nav class="bg-white shadow-md sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
-                <a href="/frontend/admin/dashboard.html" class="text-2xl font-bold text-indigo-600">EliteMC Admin</a>
+                <a href="/admin/dashboard" class="text-2xl font-bold text-indigo-600">EliteMC Admin</a>
                 <div id="auth-links" class="flex items-center gap-4"></div>
             </div>
         </div>
@@ -24,7 +25,7 @@
     </div>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <a href="/frontend/admin/dashboard.html" class="text-indigo-600 hover:underline mb-4 inline-block">← Back to Dashboard</a>
+        <a href="/admin/dashboard" class="text-indigo-600 hover:underline mb-4 inline-block">← Back to Dashboard</a>
 
         <!-- Property Selection -->
         <div class="bg-white rounded-2xl shadow-md p-6 mb-8">
@@ -75,10 +76,10 @@
     </div>
 
     <script type="module">
-        import { initAuth, requireAdmin } from '/frontend/js/auth.js'
-        import { fetchAllProperties, bulkUpdateAllocations } from '/frontend/js/admin.js'
-        import { exportAllocationsCSV, checkWalletReadiness, renderWalletReadinessReport, connectPolkadotWallet } from '/frontend/js/mint-prep.js'
-        import { showSuccess } from '/frontend/js/ui.js'
+        import { initAuth, requireAdmin } from '/js/auth.js'
+        import { fetchAllProperties, bulkUpdateAllocations } from '/js/admin.js'
+        import { exportAllocationsCSV, checkWalletReadiness, renderWalletReadinessReport, connectPolkadotWallet } from '/js/mint-prep.js'
+        import { showSuccess } from '/js/ui.js'
 
         await requireAdmin()
         initAuth()
