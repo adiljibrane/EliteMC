@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - EliteMC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="/frontend/index.html" class="text-2xl font-bold text-indigo-600">EliteMC Admin</a>
+                <div id="auth-links" class="flex items-center gap-4"></div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="bg-indigo-600 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="text-4xl font-bold mb-2">Admin Dashboard</h1>
+            <p class="text-indigo-100">Platform management and oversight</p>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Quick Actions -->
+        <div class="grid md:grid-cols-4 gap-6 mb-8">
+            <a href="/frontend/admin/deposits.html" class="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition">
+                <div class="text-4xl mb-2">💳</div>
+                <h3 class="text-xl font-bold text-gray-800">Deposits</h3>
+                <p id="pending-deposits" class="text-2xl font-bold text-yellow-600">0 pending</p>
+            </a>
+            <a href="/frontend/admin/properties.html" class="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition">
+                <div class="text-4xl mb-2">🏢</div>
+                <h3 class="text-xl font-bold text-gray-800">Properties</h3>
+                <p id="open-properties" class="text-2xl font-bold text-green-600">0 open</p>
+            </a>
+            <a href="/frontend/admin/dividends.html" class="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition">
+                <div class="text-4xl mb-2">💰</div>
+                <h3 class="text-xl font-bold text-gray-800">Dividends</h3>
+                <p class="text-sm text-gray-600">Manage payouts</p>
+            </a>
+            <a href="/frontend/admin/mint-prep.html" class="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition">
+                <div class="text-4xl mb-2">🔗</div>
+                <h3 class="text-xl font-bold text-gray-800">Mint Prep</h3>
+                <p class="text-sm text-gray-600">Blockchain ready</p>
+            </a>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-2xl shadow-md p-6">
+                <p class="text-sm text-gray-600 mb-1">Total Users</p>
+                <p id="total-users" class="text-3xl font-bold text-gray-800">0</p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-md p-6">
+                <p class="text-sm text-gray-600 mb-1">Total Properties</p>
+                <p id="total-properties" class="text-3xl font-bold text-gray-800">0</p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-md p-6">
+                <p class="text-sm text-gray-600 mb-1">Total Raised</p>
+                <p id="total-raised" class="text-3xl font-bold text-green-600">MUR 0</p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-md p-6">
+                <p class="text-sm text-gray-600 mb-1">Pending Deposits</p>
+                <p id="pending-deposits-count" class="text-3xl font-bold text-yellow-600">0</p>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="bg-white rounded-2xl shadow-md p-6">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Recent Audit Log</h3>
+            <div id="audit-log-container"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initAuth, requireAdmin } from '/frontend/js/auth.js'
+        import { fetchDashboardStats, fetchAuditLog } from '/frontend/js/admin.js'
+        import { formatMUR, formatDateTime } from '/frontend/js/ui.js'
+
+        await requireAdmin()
+        initAuth()
+
+        async function loadDashboard() {
+            const stats = await fetchDashboardStats()
+            document.getElementById('total-users').textContent = stats.totalUsers
+            document.getElementById('total-properties').textContent = stats.totalProperties
+            document.getElementById('open-properties').textContent = `${stats.openProperties} open`
+            document.getElementById('total-raised').textContent = formatMUR(stats.totalRaised)
+            document.getElementById('pending-deposits').textContent = `${stats.pendingDeposits} pending`
+            document.getElementById('pending-deposits-count').textContent = stats.pendingDeposits
+
+            // Load audit log
+            const auditLog = await fetchAuditLog(10)
+            const container = document.getElementById('audit-log-container')
+            if (auditLog.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-4">No recent activity</p>'
+            } else {
+                container.innerHTML = `
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b-2 border-gray-200">
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Time</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Actor</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${auditLog.map(log => `
+                                    <tr class="border-b border-gray-100">
+                                        <td class="px-4 py-3 text-sm text-gray-600">${formatDateTime(log.created_at)}</td>
+                                        <td class="px-4 py-3 text-sm text-gray-800">${log.profiles?.full_name || 'System'}</td>
+                                        <td class="px-4 py-3 text-sm text-gray-600">${log.action}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `
+            }
+        }
+
+        loadDashboard()
+    </script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Deposits - EliteMC Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="/frontend/admin/dashboard.html" class="text-2xl font-bold text-indigo-600">EliteMC Admin</a>
+                <div id="auth-links" class="flex items-center gap-4"></div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="bg-indigo-600 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="text-4xl font-bold mb-2">Manage Deposits</h1>
+            <p class="text-indigo-100">Review and match bank deposits</p>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <a href="/frontend/admin/dashboard.html" class="text-indigo-600 hover:underline mb-4 inline-block">← Back to Dashboard</a>
+
+        <!-- Filters -->
+        <div class="bg-white rounded-2xl shadow-md p-6 mb-8">
+            <div class="flex gap-4">
+                <select id="filter-status" class="px-4 py-2 rounded-xl border border-gray-300">
+                    <option value="">All Deposits</option>
+                    <option value="PENDING" selected>Pending</option>
+                    <option value="MATCHED">Matched</option>
+                    <option value="REJECTED">Rejected</option>
+                </select>
+                <button id="apply-filter" class="px-6 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">
+                    Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- Deposits Table -->
+        <div class="bg-white rounded-2xl shadow-md p-6">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Deposits</h3>
+            <div id="deposits-container"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initAuth, requireAdmin } from '/frontend/js/auth.js'
+        import { fetchAllDeposits, renderDepositsTable, matchDeposit, rejectDeposit } from '/frontend/js/deposits-admin.js'
+
+        await requireAdmin()
+        initAuth()
+
+        async function loadDeposits() {
+            const status = document.getElementById('filter-status').value || null
+            const deposits = await fetchAllDeposits(status)
+            renderDepositsTable(deposits, document.getElementById('deposits-container'), { showActions: true })
+        }
+
+        window.matchDeposit = async (depositId) => {
+            await matchDeposit(depositId)
+            await loadDeposits()
+        }
+
+        window.rejectDeposit = async (depositId) => {
+            await rejectDeposit(depositId)
+            await loadDeposits()
+        }
+
+        document.getElementById('apply-filter').addEventListener('click', loadDeposits)
+        loadDeposits()
+    </script>
+</body>
+</html>

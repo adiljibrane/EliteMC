@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EliteMC Cooperative - Property Investment Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold text-indigo-600">EliteMC</h1>
+                </div>
+                <div id="auth-links" class="flex items-center gap-4">
+                    <!-- Auth links will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-5xl font-bold mb-6">Invest in Real Estate, Own Digital Shares</h2>
+            <p class="text-xl mb-8 max-w-3xl mx-auto">
+                EliteMC Cooperative brings fractional property ownership to Mauritius.
+                Buy property lots, earn dividends, and prepare for blockchain-backed tokens.
+            </p>
+            <div class="flex gap-4 justify-center">
+                <a href="/frontend/properties.html" class="px-8 py-4 bg-white text-indigo-600 rounded-2xl font-semibold hover:bg-gray-100 transition shadow-lg">
+                    Browse Properties
+                </a>
+                <a href="/frontend/login.html" class="px-8 py-4 bg-transparent border-2 border-white rounded-2xl font-semibold hover:bg-white hover:text-indigo-600 transition">
+                    Get Started
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h3 class="text-3xl font-bold text-center text-gray-800 mb-12">Why EliteMC?</h3>
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="bg-white rounded-2xl shadow-md p-8 hover:shadow-xl transition">
+                    <div class="text-4xl mb-4">🏢</div>
+                    <h4 class="text-xl font-bold text-gray-800 mb-2">Fractional Ownership</h4>
+                    <p class="text-gray-600">Own property lots starting from as little as MUR 10,000. Diversify your portfolio without massive capital.</p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="bg-white rounded-2xl shadow-md p-8 hover:shadow-xl transition">
+                    <div class="text-4xl mb-4">💰</div>
+                    <h4 class="text-xl font-bold text-gray-800 mb-2">Earn Dividends</h4>
+                    <p class="text-gray-600">Receive regular dividend distributions from rental income and property appreciation.</p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="bg-white rounded-2xl shadow-md p-8 hover:shadow-xl transition">
+                    <div class="text-4xl mb-4">🔗</div>
+                    <h4 class="text-xl font-bold text-gray-800 mb-2">Blockchain-Ready</h4>
+                    <p class="text-gray-600">Future-proof ownership with Polkadot Asset Hub integration for on-chain token representation.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Properties Preview -->
+    <section class="py-20 bg-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center mb-12">
+                <h3 class="text-3xl font-bold text-gray-800">Featured Properties</h3>
+                <a href="/frontend/properties.html" class="text-indigo-600 hover:underline font-semibold">View All →</a>
+            </div>
+            <div id="featured-properties" class="grid md:grid-cols-3 gap-8">
+                <!-- Properties will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 bg-indigo-600 text-white">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h3 class="text-4xl font-bold mb-6">Ready to Start Investing?</h3>
+            <p class="text-xl mb-8">Join EliteMC Cooperative and build your real estate portfolio today.</p>
+            <a href="/frontend/login.html" class="inline-block px-8 py-4 bg-white text-indigo-600 rounded-2xl font-semibold hover:bg-gray-100 transition shadow-lg">
+                Create Free Account
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-gray-400">&copy; 2025 EliteMC Cooperative. All rights reserved.</p>
+            <p class="text-gray-500 text-sm mt-2">Blockchain-ready property investment platform for Mauritius</p>
+        </div>
+    </footer>
+
+    <script type="module">
+        import { initAuth } from '/frontend/js/auth.js'
+        import { fetchProperties, renderPropertyCards } from '/frontend/js/properties.js'
+
+        // Initialize auth
+        initAuth()
+
+        // Load featured properties
+        async function loadFeaturedProperties() {
+            try {
+                const properties = await fetchProperties({ status: 'OPEN' })
+                const container = document.getElementById('featured-properties')
+                const featured = properties.slice(0, 3)
+
+                if (featured.length > 0) {
+                    renderPropertyCards(featured, container)
+                } else {
+                    container.innerHTML = '<p class="text-gray-500 col-span-3 text-center">No properties available yet</p>'
+                }
+            } catch (error) {
+                console.error('Error loading featured properties:', error)
+            }
+        }
+
+        loadFeaturedProperties()
+    </script>
+</body>
+</html>

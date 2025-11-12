@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders - EliteMC Cooperative</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="/frontend/index.html" class="text-2xl font-bold text-indigo-600">EliteMC</a>
+                <div id="auth-links" class="flex items-center gap-4"></div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="bg-indigo-600 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="text-4xl font-bold mb-2">My Orders</h1>
+            <p class="text-indigo-100">View your purchase history</p>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Stats -->
+        <div class="grid md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-2xl shadow-md p-6">
+                <p class="text-sm text-gray-600 mb-1">Total Orders</p>
+                <p id="stat-total" class="text-3xl font-bold text-gray-800">0</p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-md p-6">
+                <p class="text-sm text-gray-600 mb-1">Paid Orders</p>
+                <p id="stat-paid" class="text-3xl font-bold text-green-600">0</p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-md p-6">
+                <p class="text-sm text-gray-600 mb-1">Pending</p>
+                <p id="stat-pending" class="text-3xl font-bold text-yellow-600">0</p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-md p-6">
+                <p class="text-sm text-gray-600 mb-1">Total Spent</p>
+                <p id="stat-spent" class="text-3xl font-bold text-indigo-600">MUR 0</p>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white rounded-2xl shadow-md p-6 mb-8">
+            <div class="flex gap-4">
+                <select id="filter-status" class="px-4 py-2 rounded-xl border border-gray-300">
+                    <option value="">All Orders</option>
+                    <option value="PAID">Paid</option>
+                    <option value="PENDING_PAYMENT">Pending</option>
+                    <option value="CANCELLED">Cancelled</option>
+                </select>
+                <button id="apply-filter" class="px-6 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">
+                    Apply
+                </button>
+            </div>
+        </div>
+
+        <!-- Orders List -->
+        <div id="orders-container"></div>
+    </div>
+
+    <script type="module">
+        import { initAuth, requireAuth } from '/frontend/js/auth.js'
+        import { fetchOrders, renderOrdersTable, fetchOrderStats } from '/frontend/js/orders.js'
+        import { formatMUR } from '/frontend/js/ui.js'
+
+        await requireAuth()
+        initAuth()
+
+        async function loadOrders() {
+            const status = document.getElementById('filter-status').value
+            const filters = status ? { status } : {}
+
+            const orders = await fetchOrders(filters)
+            renderOrdersTable(orders, document.getElementById('orders-container'))
+        }
+
+        async function loadStats() {
+            const stats = await fetchOrderStats()
+            document.getElementById('stat-total').textContent = stats.total
+            document.getElementById('stat-paid').textContent = stats.paid
+            document.getElementById('stat-pending').textContent = stats.pending
+            document.getElementById('stat-spent').textContent = formatMUR(stats.totalSpent)
+        }
+
+        document.getElementById('apply-filter').addEventListener('click', loadOrders)
+
+        loadStats()
+        loadOrders()
+    </script>
+</body>
+</html>

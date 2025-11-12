@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Properties - EliteMC Cooperative</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="/frontend/index.html" class="text-2xl font-bold text-indigo-600">EliteMC</a>
+                <div id="auth-links" class="flex items-center gap-4"></div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <div class="bg-indigo-600 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="text-4xl font-bold mb-2">Investment Properties</h1>
+            <p class="text-indigo-100">Browse and invest in fractional real estate</p>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Filters -->
+        <div class="bg-white rounded-2xl shadow-md p-6 mb-8">
+            <div class="grid md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                    <select id="filter-status" class="w-full px-4 py-2 rounded-xl border border-gray-300">
+                        <option value="">All</option>
+                        <option value="OPEN" selected>Open</option>
+                        <option value="CLOSED">Closed</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Location</label>
+                    <input type="text" id="filter-location" placeholder="Search location..."
+                           class="w-full px-4 py-2 rounded-xl border border-gray-300">
+                </div>
+                <div class="flex items-end">
+                    <button id="apply-filters" class="w-full px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">
+                        Apply Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Properties Grid -->
+        <div id="properties-container" class="grid md:grid-cols-3 gap-6">
+            <!-- Loading skeleton -->
+            <div class="col-span-3 text-center py-12">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initAuth } from '/frontend/js/auth.js'
+        import { fetchProperties, renderPropertyCards } from '/frontend/js/properties.js'
+
+        initAuth()
+
+        async function loadProperties() {
+            const status = document.getElementById('filter-status').value
+            const location = document.getElementById('filter-location').value
+            const container = document.getElementById('properties-container')
+
+            const filters = {}
+            if (status) filters.status = status
+            if (location) filters.location = location
+
+            try {
+                const properties = await fetchProperties(filters)
+                renderPropertyCards(properties, container)
+            } catch (error) {
+                console.error('Error loading properties:', error)
+                container.innerHTML = '<p class="col-span-3 text-center text-red-600">Failed to load properties</p>'
+            }
+        }
+
+        document.getElementById('apply-filters').addEventListener('click', loadProperties)
+        loadProperties()
+    </script>
+</body>
+</html>

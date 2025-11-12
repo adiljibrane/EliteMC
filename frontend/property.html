@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Details - EliteMC Cooperative</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="/frontend/index.html" class="text-2xl font-bold text-indigo-600">EliteMC</a>
+                <div id="auth-links" class="flex items-center gap-4"></div>
+            </div>
+        </div>
+    </nav>
+
+    <div id="content" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="text-center py-12">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+        </div>
+    </div>
+
+    <!-- Buy Modal -->
+    <div id="buy-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
+            <h3 class="text-2xl font-bold mb-4">Purchase Lots</h3>
+            <p id="balance-display" class="text-sm text-gray-600 mb-4"></p>
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Number of Lots</label>
+                <input type="number" id="lots-input" min="1" value="1"
+                       class="w-full px-4 py-2 rounded-xl border border-gray-300">
+            </div>
+            <div class="mb-6">
+                <p class="text-sm text-gray-600">Total Price</p>
+                <p id="total-price" class="text-3xl font-bold text-indigo-600">MUR 0.00</p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="window.closeBuyModal()" class="flex-1 px-4 py-2 rounded-xl border border-gray-300 hover:bg-gray-50">
+                    Cancel
+                </button>
+                <button id="confirm-buy-btn" class="flex-1 px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">
+                    Confirm Purchase
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initAuth, requireAuth } from '/frontend/js/auth.js'
+        import { fetchProperty } from '/frontend/js/properties.js'
+        import { formatMUR, getStatusBadge, createProgressBar, openModal, closeModal } from '/frontend/js/ui.js'
+        import { setupBuyModal } from '/frontend/js/property-detail.js'
+
+        initAuth()
+
+        const urlParams = new URLSearchParams(window.location.search)
+        const propertyId = urlParams.get('id')
+
+        if (!propertyId) {
+            window.location.href = '/frontend/properties.html'
+        }
+
+        window.closeBuyModal = () => closeModal('buy-modal')
+
+        async function loadProperty() {
+            try {
+                const property = await fetchProperty(propertyId)
+                const images = Array.isArray(property.images) ? property.images : []
+
+                document.getElementById('content').innerHTML = `
+                    <a href="/frontend/properties.html" class="text-indigo-600 hover:underline mb-4 inline-block">← Back to Properties</a>
+
+                    <div class="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
+                        <img src="${images[0] || '/assets/placeholders/property.jpg'}" alt="${property.title}"
+                             class="w-full h-96 object-cover">
+
+                        <div class="p-8">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <h1 class="text-4xl font-bold text-gray-800 mb-2">${property.title}</h1>
+                                    <p class="text-xl text-gray-600">${property.location}</p>
+                                </div>
+                                ${getStatusBadge(property.status)}
+                            </div>
+
+                            <p class="text-gray-700 mb-6">${property.description || 'No description available'}</p>
+
+                            <div class="grid md:grid-cols-3 gap-6 mb-6">
+                                <div class="bg-gray-50 rounded-xl p-4">
+                                    <p class="text-sm text-gray-600">Price per Lot</p>
+                                    <p class="text-2xl font-bold text-indigo-600">${formatMUR(property.price_per_lot)}</p>
+                                </div>
+                                <div class="bg-gray-50 rounded-xl p-4">
+                                    <p class="text-sm text-gray-600">Total Lots</p>
+                                    <p class="text-2xl font-bold text-gray-800">${property.total_lots}</p>
+                                </div>
+                                <div class="bg-gray-50 rounded-xl p-4">
+                                    <p class="text-sm text-gray-600">Min. Purchase</p>
+                                    <p class="text-2xl font-bold text-gray-800">${property.min_lot_purchase} lot(s)</p>
+                                </div>
+                            </div>
+
+                            ${property.status === 'OPEN' ? `
+                                <button onclick="window.openBuyModal()" class="w-full px-6 py-4 bg-indigo-600 text-white rounded-2xl font-bold text-lg hover:bg-indigo-700 transition">
+                                    Buy Lots Now
+                                </button>
+                            ` : `
+                                <div class="bg-gray-100 rounded-xl p-4 text-center text-gray-600">
+                                    This property is not currently open for investment
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                `
+
+                if (property.status === 'OPEN') {
+                    await setupBuyModal(property)
+                    window.openBuyModal = () => openModal('buy-modal')
+                }
+            } catch (error) {
+                console.error('Error:', error)
+                document.getElementById('content').innerHTML = '<p class="text-center text-red-600">Failed to load property</p>'
+            }
+        }
+
+        loadProperty()
+    </script>
+</body>
+</html>

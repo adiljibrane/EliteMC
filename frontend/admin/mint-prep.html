@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mint Preparation - EliteMC Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="/frontend/admin/dashboard.html" class="text-2xl font-bold text-indigo-600">EliteMC Admin</a>
+                <div id="auth-links" class="flex items-center gap-4"></div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="bg-indigo-600 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="text-4xl font-bold mb-2">Blockchain Mint Preparation</h1>
+            <p class="text-indigo-100">Prepare properties for on-chain token minting</p>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <a href="/frontend/admin/dashboard.html" class="text-indigo-600 hover:underline mb-4 inline-block">← Back to Dashboard</a>
+
+        <!-- Property Selection -->
+        <div class="bg-white rounded-2xl shadow-md p-6 mb-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Select Property</h3>
+            <select id="property-select" class="w-full px-4 py-2 rounded-xl border border-gray-300 mb-4">
+                <option value="">Select a property...</option>
+            </select>
+            <button id="check-readiness-btn" class="w-full px-4 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700">
+                Check Wallet Readiness
+            </button>
+        </div>
+
+        <!-- Wallet Readiness Report -->
+        <div id="readiness-report" class="hidden"></div>
+
+        <!-- Actions -->
+        <div id="actions-section" class="hidden bg-white rounded-2xl shadow-md p-6 mb-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Actions</h3>
+            <div class="grid md:grid-cols-2 gap-4">
+                <button id="export-csv-btn" class="px-4 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700">
+                    📊 Export Allocations CSV
+                </button>
+                <button id="connect-wallet-btn" class="px-4 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700">
+                    🔗 Connect Polkadot Wallet (Coming Soon)
+                </button>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="bg-blue-50 border border-blue-200 rounded-2xl p-6">
+            <h3 class="text-xl font-bold text-blue-900 mb-4">🔗 On-Chain Minting Process (Future)</h3>
+            <ol class="list-decimal list-inside space-y-2 text-blue-800">
+                <li>Ensure property status is <span class="font-semibold">READY_TO_MINT</span></li>
+                <li>Verify all shareholders have connected Polkadot wallets (SS58 addresses)</li>
+                <li>Export allocation CSV for batch processing</li>
+                <li>Create Asset on Polkadot Asset Hub using <span class="font-mono">@polkadot/api</span></li>
+                <li>Record <span class="font-mono">asset_hub_asset_id</span> in property table</li>
+                <li>Mint total supply to admin wallet</li>
+                <li>Batch transfer tokens to shareholders based on allocations</li>
+                <li>Update <span class="font-mono">onchain_tx_hash</span> and <span class="font-mono">onchain_block</span></li>
+                <li>Update allocation statuses to <span class="font-semibold">ONCHAIN_SETTLED</span></li>
+                <li>Update property status to <span class="font-semibold">MINTED</span></li>
+            </ol>
+            <p class="mt-4 text-sm text-blue-700">
+                <strong>Note:</strong> This MVP operates off-chain. On-chain integration requires @polkadot/api, Asset Hub testnet/mainnet connection, and an indexer for confirmation tracking.
+            </p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initAuth, requireAdmin } from '/frontend/js/auth.js'
+        import { fetchAllProperties, bulkUpdateAllocations } from '/frontend/js/admin.js'
+        import { exportAllocationsCSV, checkWalletReadiness, renderWalletReadinessReport, connectPolkadotWallet } from '/frontend/js/mint-prep.js'
+        import { showSuccess } from '/frontend/js/ui.js'
+
+        await requireAdmin()
+        initAuth()
+
+        let selectedPropertyId = null
+
+        async function loadProperties() {
+            const properties = await fetchAllProperties()
+            const select = document.getElementById('property-select')
+            select.innerHTML = '<option value="">Select a property...</option>' +
+                properties.filter(p => p.status === 'READY_TO_MINT' || p.status === 'OPEN').map(p => `
+                    <option value="${p.id}">${p.title} - ${p.status}</option>
+                `).join('')
+        }
+
+        document.getElementById('check-readiness-btn').addEventListener('click', async () => {
+            const propertyId = document.getElementById('property-select').value
+            if (!propertyId) {
+                alert('Please select a property')
+                return
+            }
+
+            selectedPropertyId = propertyId
+
+            const report = await checkWalletReadiness(propertyId)
+            renderWalletReadinessReport(report, document.getElementById('readiness-report'))
+
+            document.getElementById('readiness-report').classList.remove('hidden')
+            document.getElementById('actions-section').classList.remove('hidden')
+        })
+
+        document.getElementById('export-csv-btn').addEventListener('click', async () => {
+            if (!selectedPropertyId) return
+            await exportAllocationsCSV(selectedPropertyId)
+        })
+
+        document.getElementById('connect-wallet-btn').addEventListener('click', async () => {
+            await connectPolkadotWallet()
+        })
+
+        loadProperties()
+    </script>
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet - EliteMC Cooperative</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="/frontend/index.html" class="text-2xl font-bold text-indigo-600">EliteMC</a>
+                <div id="auth-links" class="flex items-center gap-4"></div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="bg-indigo-600 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="text-4xl font-bold mb-2">My Wallet</h1>
+            <p class="text-indigo-100">Manage your balance and deposits</p>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Balance Card -->
+        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl shadow-xl p-8 mb-8 text-white">
+            <p class="text-indigo-100 mb-2">Total Balance</p>
+            <h2 id="total-balance" class="text-5xl font-bold mb-4">MUR 0.00</h2>
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="bg-white bg-opacity-20 rounded-xl p-4">
+                    <p class="text-indigo-100 text-sm">Available</p>
+                    <p id="available-balance" class="text-2xl font-bold">MUR 0.00</p>
+                </div>
+                <div class="bg-white bg-opacity-20 rounded-xl p-4">
+                    <p class="text-indigo-100 text-sm">Locked</p>
+                    <p id="locked-balance" class="text-2xl font-bold">MUR 0.00</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="grid md:grid-cols-2 gap-6 mb-8">
+            <button onclick="document.getElementById('deposit-section').scrollIntoView({behavior:'smooth'})"
+                    class="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition text-left">
+                <div class="text-4xl mb-2">💰</div>
+                <h3 class="text-xl font-bold text-gray-800">Deposit Funds</h3>
+                <p class="text-gray-600">Add funds to your wallet via bank transfer</p>
+            </button>
+            <button onclick="document.getElementById('portfolio-section').scrollIntoView({behavior:'smooth'})"
+                    class="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition text-left">
+                <div class="text-4xl mb-2">📊</div>
+                <h3 class="text-xl font-bold text-gray-800">View Portfolio</h3>
+                <p class="text-gray-600">See your property investments</p>
+            </button>
+        </div>
+
+        <!-- Transaction History -->
+        <div class="bg-white rounded-2xl shadow-md p-6 mb-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Transaction History</h3>
+            <div id="ledger-container"></div>
+        </div>
+
+        <!-- Portfolio -->
+        <div id="portfolio-section" class="bg-white rounded-2xl shadow-md p-6 mb-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">My Portfolio</h3>
+            <div id="portfolio-container"></div>
+        </div>
+
+        <!-- Deposit Section -->
+        <div id="deposit-section" class="bg-white rounded-2xl shadow-md p-6 mb-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Submit Bank Deposit</h3>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="font-semibold text-gray-700 mb-2">How to Deposit:</h4>
+                    <ol class="text-sm text-gray-600 space-y-2 list-decimal list-inside">
+                        <li>Transfer funds to: MCB Bank Account 000123456789</li>
+                        <li>Use your email as reference</li>
+                        <li>Upload proof of payment below</li>
+                        <li>Wait for admin approval (usually within 24h)</li>
+                    </ol>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Bank Reference</label>
+                        <input type="text" id="bank-ref" placeholder="Your transaction ref"
+                               class="w-full px-4 py-2 rounded-xl border border-gray-300">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Amount (MUR)</label>
+                        <input type="number" id="amount" placeholder="10000"
+                               class="w-full px-4 py-2 rounded-xl border border-gray-300">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Date Received</label>
+                        <input type="date" id="received-date"
+                               class="w-full px-4 py-2 rounded-xl border border-gray-300">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Proof of Payment</label>
+                        <input type="file" id="proof-file" accept="image/*,application/pdf"
+                               class="w-full px-4 py-2 rounded-xl border border-gray-300">
+                    </div>
+                    <button id="submit-deposit-btn" class="w-full px-4 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700">
+                        Submit Deposit
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Deposits -->
+        <div class="bg-white rounded-2xl shadow-md p-6">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">My Deposits</h3>
+            <div id="deposits-container"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initAuth, requireAuth } from '/frontend/js/auth.js'
+        import { fetchBalance, renderLedgerTable, fetchLedger, fetchDeposits, renderDepositsTable, submitDeposit, fetchPortfolio, renderPortfolio } from '/frontend/js/wallet.js'
+        import { formatMUR } from '/frontend/js/ui.js'
+
+        await requireAuth()
+        initAuth()
+
+        async function loadWalletData() {
+            // Load balance
+            const balance = await fetchBalance()
+            const total = parseFloat(balance.available) + parseFloat(balance.locked)
+            document.getElementById('total-balance').textContent = formatMUR(total)
+            document.getElementById('available-balance').textContent = formatMUR(balance.available)
+            document.getElementById('locked-balance').textContent = formatMUR(balance.locked)
+
+            // Load ledger
+            const ledger = await fetchLedger({ limit: 20 })
+            renderLedgerTable(ledger, document.getElementById('ledger-container'))
+
+            // Load portfolio
+            const portfolio = await fetchPortfolio()
+            renderPortfolio(portfolio, document.getElementById('portfolio-container'))
+
+            // Load deposits
+            const deposits = await fetchDeposits()
+            renderDepositsTable(deposits, document.getElementById('deposits-container'))
+        }
+
+        // Submit deposit
+        document.getElementById('submit-deposit-btn').addEventListener('click', async () => {
+            const bankRef = document.getElementById('bank-ref').value.trim()
+            const amount = document.getElementById('amount').value.trim()
+            const receivedDate = document.getElementById('received-date').value
+            const proofFile = document.getElementById('proof-file').files[0]
+            const button = document.getElementById('submit-deposit-btn')
+
+            if (!bankRef || !amount || !receivedDate) {
+                alert('Please fill in all fields')
+                return
+            }
+
+            await submitDeposit(bankRef, parseFloat(amount), receivedDate, proofFile, button)
+
+            // Reload deposits
+            const deposits = await fetchDeposits()
+            renderDepositsTable(deposits, document.getElementById('deposits-container'))
+
+            // Clear form
+            document.getElementById('bank-ref').value = ''
+            document.getElementById('amount').value = ''
+            document.getElementById('received-date').value = ''
+            document.getElementById('proof-file').value = ''
+        })
+
+        loadWalletData()
+    </script>
+</body>
+</html>

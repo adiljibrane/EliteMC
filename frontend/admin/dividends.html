@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Dividends - EliteMC Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="/frontend/admin/dashboard.html" class="text-2xl font-bold text-indigo-600">EliteMC Admin</a>
+                <div id="auth-links" class="flex items-center gap-4"></div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="bg-indigo-600 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="text-4xl font-bold mb-2">Manage Dividends</h1>
+            <p class="text-indigo-100">Calculate and distribute dividend payouts</p>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <a href="/frontend/admin/dashboard.html" class="text-indigo-600 hover:underline mb-4 inline-block">← Back to Dashboard</a>
+
+        <!-- Create Dividend Statement -->
+        <div class="bg-white rounded-2xl shadow-md p-6 mb-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Create Dividend Statement</h3>
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Property</label>
+                    <select id="property-select" class="w-full px-4 py-2 rounded-xl border border-gray-300">
+                        <option value="">Select a property...</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Period Start</label>
+                    <input type="date" id="period-start" class="w-full px-4 py-2 rounded-xl border border-gray-300">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Period End</label>
+                    <input type="date" id="period-end" class="w-full px-4 py-2 rounded-xl border border-gray-300">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Gross Income (MUR)</label>
+                    <input type="number" id="gross-income" placeholder="100000" step="0.01"
+                           class="w-full px-4 py-2 rounded-xl border border-gray-300">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Expenses (MUR)</label>
+                    <input type="number" id="expenses" placeholder="10000" value="0" step="0.01"
+                           class="w-full px-4 py-2 rounded-xl border border-gray-300">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Payout Method</label>
+                    <select id="payout-method" class="w-full px-4 py-2 rounded-xl border border-gray-300">
+                        <option value="INTERNAL_CREDIT">Internal Credit (Auto-credit to wallet)</option>
+                        <option value="BANK_TRANSFER">Bank Transfer (Manual)</option>
+                    </select>
+                </div>
+            </div>
+            <button id="preview-btn" class="mt-4 w-full px-4 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700">
+                Preview Distribution
+            </button>
+        </div>
+
+        <!-- Preview -->
+        <div id="preview-section" class="hidden bg-white rounded-2xl shadow-md p-6 mb-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Distribution Preview</h3>
+            <div id="preview-container"></div>
+            <button id="confirm-btn" class="mt-4 w-full px-4 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700">
+                Confirm & Distribute
+            </button>
+        </div>
+
+        <!-- Past Statements -->
+        <div class="bg-white rounded-2xl shadow-md p-6">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Past Dividend Statements</h3>
+            <div id="statements-container"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initAuth, requireAdmin } from '/frontend/js/auth.js'
+        import { fetchAllProperties } from '/frontend/js/admin.js'
+        import { calculateDividends, fetchDividendStatements, previewDividendDistribution, renderDividendPreview, renderDividendStatementsTable } from '/frontend/js/dividends-admin.js'
+        import { showError } from '/frontend/js/ui.js'
+
+        await requireAdmin()
+        initAuth()
+
+        let currentPreview = null
+
+        async function loadProperties() {
+            const properties = await fetchAllProperties()
+            const select = document.getElementById('property-select')
+            select.innerHTML = '<option value="">Select a property...</option>' +
+                properties.filter(p => p.status !== 'DRAFT').map(p => `
+                    <option value="${p.id}">${p.title} - ${p.location}</option>
+                `).join('')
+        }
+
+        async function loadStatements() {
+            const statements = await fetchDividendStatements()
+            renderDividendStatementsTable(statements, document.getElementById('statements-container'))
+        }
+
+        document.getElementById('preview-btn').addEventListener('click', async () => {
+            const propertyId = document.getElementById('property-select').value
+            const grossIncome = parseFloat(document.getElementById('gross-income').value)
+            const expenses = parseFloat(document.getElementById('expenses').value) || 0
+
+            if (!propertyId || !grossIncome) {
+                showError('Please fill in all required fields')
+                return
+            }
+
+            const distributable = grossIncome - expenses
+
+            if (distributable <= 0) {
+                showError('Distributable amount must be positive')
+                return
+            }
+
+            const preview = await previewDividendDistribution(propertyId, distributable)
+            currentPreview = preview
+
+            renderDividendPreview(preview, document.getElementById('preview-container'))
+            document.getElementById('preview-section').classList.remove('hidden')
+        })
+
+        document.getElementById('confirm-btn').addEventListener('click', async () => {
+            const button = document.getElementById('confirm-btn')
+            const dividendData = {
+                property_id: document.getElementById('property-select').value,
+                period_start: document.getElementById('period-start').value,
+                period_end: document.getElementById('period-end').value,
+                gross_income_mur: parseFloat(document.getElementById('gross-income').value),
+                expenses_mur: parseFloat(document.getElementById('expenses').value) || 0,
+                payout_method: document.getElementById('payout-method').value,
+            }
+
+            await calculateDividends(dividendData, button)
+            await loadStatements()
+
+            // Clear form
+            document.getElementById('property-select').value = ''
+            document.getElementById('period-start').value = ''
+            document.getElementById('period-end').value = ''
+            document.getElementById('gross-income').value = ''
+            document.getElementById('expenses').value = '0'
+            document.getElementById('preview-section').classList.add('hidden')
+        })
+
+        loadProperties()
+        loadStatements()
+    </script>
+</body>
+</html>
