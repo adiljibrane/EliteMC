@@ -1,10 +1,7 @@
 {
   "version": 2,
   "public": true,
-  "github": {
-    "silent": true
-  },
-  "buildCommand": "echo 'No build needed for static site'",
+  "buildCommand": "echo 'Static site, no build needed'",
   "outputDirectory": "frontend",
   "cleanUrls": true,
   "trailingSlash": false,
@@ -27,6 +24,10 @@
         {
           "key": "Referrer-Policy",
           "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "geolocation=(), microphone=(), camera=()"
         }
       ]
     },
@@ -38,18 +39,15 @@
           "value": "public, max-age=31536000, immutable"
         }
       ]
-    }
-  ],
-  "redirects": [
+    },
     {
-      "source": "/",
-      "destination": "/index.html"
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/admin/:path*",
-      "destination": "/admin/:path*"
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     }
   ]
 }
