@@ -5,6 +5,7 @@
 # Supabase
 .supabase/
 supabase/.env
+supabase/.temp/
 
 # Node
 node_modules/
