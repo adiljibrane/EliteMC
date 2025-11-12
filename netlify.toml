@@ -1,0 +1,53 @@
+# Netlify Configuration for EliteMC Cooperative
+# Alternative to Vercel deployment
+
+[build]
+  base = "frontend"
+  publish = "."
+  command = "echo 'No build needed for static site'"
+
+[[redirects]]
+  from = "/"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin/*"
+  to = "/admin/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/:splat"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.svg"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[dev]
+  command = "npx serve . -p 8888"
+  port = 8888
+  targetPort = 8888
+  publish = "."
+  autoLaunch = true
