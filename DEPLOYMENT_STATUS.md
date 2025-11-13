@@ -29,7 +29,9 @@
 - ✅ PATH_FIXES.md - Path correction summary
 - ✅ QUICKREF.md - Quick reference commands
 - ✅ IMPROVEMENTS.md - 38 future features
-- ✅ EDGE_FUNCTIONS_DEPLOY.md - Edge Functions deployment guide (NEW)
+- ✅ EDGE_FUNCTIONS_DEPLOY.md - Edge Functions deployment guide
+- ✅ E2E_TESTING_GUIDE.md - Complete end-to-end testing walkthrough (NEW)
+- ✅ DEPLOYMENT_STATUS.md - Current deployment status tracker
 
 ### 5. Git Repository ✅
 - **Branch**: `claude/elitemc-mvp-fullstack-011CV3pkuXE4WUhJRk7Ni86g`
@@ -40,61 +42,39 @@
 
 ## ⏳ Pending Tasks
 
-### 1. Deploy Edge Functions (15 minutes)
-**Status**: Ready to deploy
-**Action Required**: Choose deployment method
+### 1. Edge Functions ✅ COMPLETE
+**Status**: Deployed and tested
+**Result**: All 3 functions returning `401 Unauthorized` (correct authentication behavior)
+- `capture_order` ✅
+- `match_deposit` ✅
+- `calculate_dividends` ✅
 
-#### Recommended: Dashboard Upload (Easiest)
-1. Go to https://supabase.com/dashboard/project/riizybdrtikrcnrztcme
-2. Navigate to **Edge Functions**
-3. Upload each function:
-   - `capture_order` (from `supabase/functions/capture_order/index.ts`)
-   - `match_deposit` (from `supabase/functions/match_deposit/index.ts`)
-   - `calculate_dividends` (from `supabase/functions/calculate_dividends/index.ts`)
-4. Set secrets for each:
-   ```
-   SUPABASE_URL=https://riizybdrtikrcnrztcme.supabase.co
-   SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJpaXp5YmRydGlrcmNucnp0Y21lIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MjkzNjEzNCwiZXhwIjoyMDc4NTEyMTM0fQ.vfzCvU-qH_kSwz4SolIzBPlXSMeOVHbzCLY4vZpKkC0
-   ```
+### 2. End-to-End Testing (30 minutes)
+**Status**: Ready to test
+**Action Required**: Follow the complete testing guide
 
-**Full instructions**: See `EDGE_FUNCTIONS_DEPLOY.md`
+**See**: `E2E_TESTING_GUIDE.md` for detailed step-by-step instructions
 
-### 2. Create Admin User (5 minutes)
-**Status**: Waiting for Edge Functions
-**Action Required**:
-1. Sign up at https://your-vercel-site.vercel.app/login
-2. Use your email (will receive OTP)
-3. After signup, run in Supabase SQL Editor:
-   ```sql
-   UPDATE auth.users
-   SET raw_app_meta_data = raw_app_meta_data || '{"is_admin": true}'::jsonb
-   WHERE email = 'your@email.com';
-   ```
+**Quick Summary**:
+1. Visit: https://elite-j55i24glt-adiljibranes-projects.vercel.app/
+2. Sign up with your email
+3. Grant yourself admin access via SQL
+4. Create a property listing
+5. Upload and match a deposit
+6. Purchase property lots
+7. Calculate and distribute dividends
+8. Verify all flows work end-to-end
 
 ### 3. Update Supabase Auth Redirects (2 minutes)
-**Status**: Pending
+**Status**: Recommended (optional for testing)
 **Action Required**:
 1. Go to Supabase → Authentication → URL Configuration
 2. Update:
    ```
-   Site URL: https://your-vercel-site.vercel.app
+   Site URL: https://elite-j55i24glt-adiljibranes-projects.vercel.app
    Redirect URLs:
-     https://your-vercel-site.vercel.app/**
-     https://your-vercel-site.vercel.app/properties
-     http://localhost:8000/**
+     https://elite-j55i24glt-adiljibranes-projects.vercel.app/**
    ```
-
-### 4. Final Testing (10 minutes)
-**Status**: Pending
-**Action Required**:
-- [ ] Test signup/login flow
-- [ ] Test property listing view
-- [ ] Test bank deposit upload (admin)
-- [ ] Test deposit matching (admin)
-- [ ] Test property purchase
-- [ ] Test wallet balance display
-- [ ] Test order history
-- [ ] Test dividend calculation (admin)
 
 ---
 
@@ -173,12 +153,12 @@ EliteMC/
 | Storage Buckets | ✅ Configured | 100% |
 | Frontend Code | ✅ Fixed | 100% |
 | Vercel Deployment | ✅ Live | 100% |
-| Edge Functions | ⏳ Ready | 0% |
+| Edge Functions | ✅ Deployed | 100% |
 | Admin User | ⏳ Pending | 0% |
 | Auth Redirects | ⏳ Pending | 0% |
 | E2E Testing | ⏳ Pending | 0% |
 
-**Overall Progress**: 50% complete
+**Overall Progress**: 62% complete
 
 ---
 
@@ -214,4 +194,4 @@ EliteMC/
 
 ---
 
-**Next**: Deploy Edge Functions (15 minutes) → See `EDGE_FUNCTIONS_DEPLOY.md`
+**Next**: Complete E2E Testing (30 minutes) → See `E2E_TESTING_GUIDE.md`
