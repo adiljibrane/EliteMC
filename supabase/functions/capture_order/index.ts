@@ -103,10 +103,8 @@ serve(async (req) => {
       }
     }
 
-    // Start transaction by setting isolation level
-    const { error: txError } = await supabaseClient.rpc('exec_sql', {
-      query: 'BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE'
-    }).catch(() => ({ error: null })) // Supabase doesn't support explicit transactions, so we rely on atomic operations
+    // Note: Supabase doesn't support explicit transactions via RPC
+    // We rely on atomic operations at the row level
 
     // Fetch order details
     const { data: order, error: orderError } = await supabaseClient
