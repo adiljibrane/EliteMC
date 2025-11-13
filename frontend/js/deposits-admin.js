@@ -110,15 +110,24 @@ export const matchDeposit = async (depositId, notes = null) => {
 
     if (!confirmed) return null
 
-    const result = await invokeEdgeFunction('match_deposit', {
+    const payload = {
       bank_deposit_id: depositId,
       action: 'MATCH',
-      notes,
-    })
+    }
 
+    if (notes) {
+      payload.notes = notes
+    }
+
+    console.log('Calling match_deposit with:', payload)
+
+    const result = await invokeEdgeFunction('match_deposit', payload)
+
+    console.log('Match deposit result:', result)
     showSuccess(`Deposit matched! ${formatMUR(result.amount_credited)} credited.`)
     return result
   } catch (error) {
+    console.error('Match deposit error:', error)
     showError(error.message || 'Failed to match deposit')
     throw error
   }
@@ -135,15 +144,24 @@ export const rejectDeposit = async (depositId, notes = null) => {
 
     if (!confirmed) return null
 
-    const result = await invokeEdgeFunction('match_deposit', {
+    const payload = {
       bank_deposit_id: depositId,
       action: 'REJECT',
-      notes,
-    })
+    }
 
+    if (notes) {
+      payload.notes = notes
+    }
+
+    console.log('Calling match_deposit (reject) with:', payload)
+
+    const result = await invokeEdgeFunction('match_deposit', payload)
+
+    console.log('Reject deposit result:', result)
     showSuccess('Deposit rejected')
     return result
   } catch (error) {
+    console.error('Reject deposit error:', error)
     showError(error.message || 'Failed to reject deposit')
     throw error
   }
