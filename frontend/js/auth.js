@@ -69,7 +69,9 @@ export const handleSignIn = async (email, button) => {
     showSuccess('Check your email for the login link!')
     return true
   } catch (error) {
-    showError(error.message)
+    console.error('Sign in error:', error)
+    const errorMessage = error?.message || error?.error_description || 'Failed to send login link. Please check Supabase email settings.'
+    showError(errorMessage)
     return false
   } finally {
     enableButton(button)
