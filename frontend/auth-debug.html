@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <base href="/">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Debug - EliteMC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-4xl mx-auto bg-white rounded-lg shadow p-6">
+        <h1 class="text-2xl font-bold mb-4">Authentication Debug</h1>
+
+        <div class="space-y-4">
+            <div>
+                <h2 class="font-semibold text-lg mb-2">1. Current URL</h2>
+                <pre id="current-url" class="bg-gray-100 p-3 rounded text-xs overflow-auto"></pre>
+            </div>
+
+            <div>
+                <h2 class="font-semibold text-lg mb-2">2. Hash Parameters</h2>
+                <pre id="hash-params" class="bg-gray-100 p-3 rounded text-xs overflow-auto"></pre>
+            </div>
+
+            <div>
+                <h2 class="font-semibold text-lg mb-2">3. Access Token</h2>
+                <pre id="access-token" class="bg-gray-100 p-3 rounded text-xs overflow-auto"></pre>
+            </div>
+
+            <div>
+                <h2 class="font-semibold text-lg mb-2">4. Session Status</h2>
+                <pre id="session-status" class="bg-gray-100 p-3 rounded text-xs overflow-auto"></pre>
+            </div>
+
+            <div>
+                <h2 class="font-semibold text-lg mb-2">5. User Info</h2>
+                <pre id="user-info" class="bg-gray-100 p-3 rounded text-xs overflow-auto"></pre>
+            </div>
+
+            <div>
+                <h2 class="font-semibold text-lg mb-2">6. Console Logs</h2>
+                <pre id="console-logs" class="bg-gray-100 p-3 rounded text-xs overflow-auto max-h-64"></pre>
+            </div>
+
+            <button id="test-login" class="mt-4 px-6 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+                Test Setting Session
+            </button>
+
+            <button id="check-session" class="mt-4 px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                Check Current Session
+            </button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { supabase } from '/js/supabaseClient.js'
+
+        const log = (msg) => {
+            const logsEl = document.getElementById('console-logs')
+            logsEl.textContent += msg + '\n'
+            console.log(msg)
+        }
+
+        // Display current URL
+        document.getElementById('current-url').textContent = window.location.href
+
+        // Parse hash parameters
+        const hashParams = new URLSearchParams(window.location.hash.substring(1))
+        const hashObj = {}
+        for (const [key, value] of hashParams) {
+            hashObj[key] = value
+        }
+        document.getElementById('hash-params').textContent = JSON.stringify(hashObj, null, 2)
+
+        // Display tokens
+        const accessToken = hashParams.get('access_token')
+        const refreshToken = hashParams.get('refresh_token')
+        document.getElementById('access-token').textContent = accessToken ?
+            accessToken.substring(0, 50) + '...' : 'No access token found'
+
+        log('Page loaded')
+        log('Access token present: ' + !!accessToken)
+        log('Refresh token present: ' + !!refreshToken)
+
+        // Try to set session if tokens exist
+        if (accessToken && refreshToken) {
+            log('Attempting to set session...')
+
+            supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken
+            }).then(({ data, error }) => {
+                if (error) {
+                    log('❌ Error setting session: ' + error.message)
+                    document.getElementById('session-status').textContent = 'Error: ' + error.message
+                } else {
+                    log('✅ Session set successfully!')
+                    document.getElementById('session-status').textContent = 'Session set successfully!'
+
+                    // Get user info
+                    return supabase.auth.getUser()
+                }
+            }).then((result) => {
+                if (result) {
+                    const { data, error } = result
+                    if (error) {
+                        log('❌ Error getting user: ' + error.message)
+                    } else {
+                        log('✅ User: ' + data.user.email)
+                        document.getElementById('user-info').textContent = JSON.stringify(data.user, null, 2)
+                    }
+                }
+            }).catch(err => {
+                log('❌ Catch error: ' + err.message)
+            })
+        } else {
+            log('⚠️ No tokens in URL hash')
+            document.getElementById('session-status').textContent = 'No tokens found in URL'
+        }
+
+        // Check session button
+        document.getElementById('check-session').addEventListener('click', async () => {
+            log('Checking current session...')
+            const { data: { session }, error } = await supabase.auth.getSession()
+
+            if (error) {
+                log('❌ Error: ' + error.message)
+                document.getElementById('session-status').textContent = 'Error: ' + error.message
+            } else if (session) {
+                log('✅ Session exists!')
+                document.getElementById('session-status').textContent = 'Logged in as: ' + session.user.email
+                document.getElementById('user-info').textContent = JSON.stringify(session.user, null, 2)
+            } else {
+                log('❌ No session')
+                document.getElementById('session-status').textContent = 'No active session'
+            }
+        })
+
+        // Test login button
+        document.getElementById('test-login').addEventListener('click', async () => {
+            const email = prompt('Enter email to send magic link:')
+            if (!email) return
+
+            log('Sending magic link to ' + email)
+            const { error } = await supabase.auth.signInWithOtp({
+                email,
+                options: {
+                    emailRedirectTo: window.location.origin + '/auth-debug'
+                }
+            })
+
+            if (error) {
+                log('❌ Error: ' + error.message)
+                alert('Error: ' + error.message)
+            } else {
+                log('✅ Magic link sent!')
+                alert('Check your email for the magic link!')
+            }
+        })
+    </script>
+</body>
+</html>
