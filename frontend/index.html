@@ -105,9 +105,40 @@
     <script type="module">
         import { initAuth } from '/js/auth.js'
         import { fetchProperties, renderPropertyCards } from '/js/properties.js'
+        import { supabase } from '/js/supabaseClient.js'
 
-        // Initialize auth
-        initAuth()
+        // Handle magic link callback
+        const handleAuthCallback = async () => {
+            const hashParams = new URLSearchParams(window.location.hash.substring(1))
+            const accessToken = hashParams.get('access_token')
+            const refreshToken = hashParams.get('refresh_token')
+
+            if (accessToken && refreshToken) {
+                try {
+                    const { data, error } = await supabase.auth.setSession({
+                        access_token: accessToken,
+                        refresh_token: refreshToken
+                    })
+
+                    if (error) throw error
+
+                    console.log('✅ Session established')
+                    // Clear hash and redirect to properties
+                    window.location.href = '/properties'
+                    return true
+                } catch (error) {
+                    console.error('Auth callback error:', error)
+                }
+            }
+            return false
+        }
+
+        // Check for auth callback, then initialize
+        const authHandled = await handleAuthCallback()
+        if (!authHandled) {
+            // Initialize auth
+            initAuth()
+        }
 
         // Load featured properties
         async function loadFeaturedProperties() {
