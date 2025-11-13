@@ -26,12 +26,13 @@
    - Copy/paste content from: `supabase/functions/calculate_dividends/index.ts`
    - Click "Deploy function"
 
-5. **Set Environment Secrets**
-   For each function, go to Settings → Secrets and add:
-   ```
-   SUPABASE_URL=https://riizybdrtikrcnrztcme.supabase.co
-   SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJpaXp5YmRydGlrcmNucnp0Y21lIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MjkzNjEzNCwiZXhwIjoyMDc4NTEyMTM0fQ.vfzCvU-qH_kSwz4SolIzBPlXSMeOVHbzCLY4vZpKkC0
-   ```
+5. **Environment Secrets** ✅ NOT NEEDED!
+   Supabase **automatically provides** these environment variables to all Edge Functions:
+   - `SUPABASE_URL` - Your project URL
+   - `SUPABASE_SERVICE_ROLE_KEY` - Service role key
+   - `SUPABASE_ANON_KEY` - Anonymous key
+
+   **You don't need to set any secrets manually!** Skip this step.
 
 ---
 
@@ -76,13 +77,9 @@ export SUPABASE_ACCESS_TOKEN="sbp_your_token_here"
 /tmp/supabase functions deploy
 ```
 
-### Step 5: Set Secrets
+### Step 5: Secrets (Not Needed)
 
-```bash
-# Set environment secrets for functions
-/tmp/supabase secrets set SUPABASE_URL=https://riizybdrtikrcnrztcme.supabase.co
-/tmp/supabase secrets set SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJpaXp5YmRydGlrcmNucnp0Y21lIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MjkzNjEzNCwiZXhwIjoyMDc4NTEyMTM0fQ.vfzCvU-qH_kSwz4SolIzBPlXSMeOVHbzCLY4vZpKkC0
-```
+✅ **Supabase automatically provides environment variables** - no manual secrets needed!
 
 ---
 
