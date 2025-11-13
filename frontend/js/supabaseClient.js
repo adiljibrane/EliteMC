@@ -52,7 +52,10 @@ export const invokeEdgeFunction = async (functionName, payload = {}) => {
   const data = await response.json()
 
   if (!response.ok) {
-    throw new Error(data.error || 'Request failed')
+    // Include validation details if available
+    const errorMsg = data.error || 'Request failed'
+    const details = data.details ? `\nDetails: ${JSON.stringify(data.details)}` : ''
+    throw new Error(errorMsg + details)
   }
 
   return data
