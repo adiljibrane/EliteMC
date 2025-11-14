@@ -109,26 +109,50 @@
 
         // Handle magic link callback
         const handleAuthCallback = async () => {
+            // Log the full URL for debugging
+            console.log('🔍 Current URL:', window.location.href)
+            console.log('🔍 Hash:', window.location.hash)
+
             const hashParams = new URLSearchParams(window.location.hash.substring(1))
             const accessToken = hashParams.get('access_token')
             const refreshToken = hashParams.get('refresh_token')
+            const errorParam = hashParams.get('error')
+            const errorDescription = hashParams.get('error_description')
+
+            // Check for error in URL
+            if (errorParam) {
+                console.error('❌ Auth callback error from URL:', errorParam, errorDescription)
+                alert(`Authentication error: ${errorDescription || errorParam}`)
+                return false
+            }
 
             if (accessToken && refreshToken) {
+                console.log('🔑 Found auth tokens in URL, establishing session...')
                 try {
                     const { data, error } = await supabase.auth.setSession({
                         access_token: accessToken,
                         refresh_token: refreshToken
                     })
 
-                    if (error) throw error
+                    if (error) {
+                        console.error('❌ setSession error:', error)
+                        throw error
+                    }
 
-                    console.log('✅ Session established')
+                    console.log('✅ Session established successfully!')
+                    console.log('👤 User:', data.user?.email)
+
                     // Clear hash and redirect to properties
+                    alert('✅ Successfully logged in! Redirecting...')
                     window.location.href = '/properties'
                     return true
                 } catch (error) {
-                    console.error('Auth callback error:', error)
+                    console.error('❌ Auth callback error:', error)
+                    alert(`Login failed: ${error.message}`)
+                    return false
                 }
+            } else {
+                console.log('ℹ️ No auth tokens in URL')
             }
             return false
         }

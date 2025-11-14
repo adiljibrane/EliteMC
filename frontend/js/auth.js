@@ -57,19 +57,24 @@ export const handleSignIn = async (email, button) => {
   try {
     disableButton(button, 'Sending...')
 
+    // Use the full current URL as the redirect to ensure we're on the right deployment
+    const redirectUrl = window.location.origin + '/properties'
+    console.log('🔑 Sending magic link with redirect:', redirectUrl)
+
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: window.location.origin + '/properties',
+        emailRedirectTo: redirectUrl,
       },
     })
 
     if (error) throw error
 
     showSuccess('Check your email for the login link!')
+    console.log('✅ Magic link sent successfully')
     return true
   } catch (error) {
-    console.error('Sign in error:', error)
+    console.error('❌ Sign in error:', error)
     const errorMessage = error?.message || error?.error_description || 'Failed to send login link. Please check Supabase email settings.'
     showError(errorMessage)
     return false
