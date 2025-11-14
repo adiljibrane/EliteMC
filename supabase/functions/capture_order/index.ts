@@ -217,19 +217,42 @@ serve(async (req) => {
       throw new Error(`Failed to update order: ${updateOrderError.message}`)
     }
 
-    // Create property allocation
-    const { error: allocationError } = await supabaseClient
+    // Create or update property allocation
+    // Check if user already has an allocation for this property
+    const { data: existingAllocation } = await supabaseClient
       .from('property_allocations')
-      .insert({
-        user_id: user.id,
-        property_id: order.property_id,
-        lots: order.lots,
-        status: 'RESERVED',
-        order_id: order.id,
-      })
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('property_id', order.property_id)
+      .in('status', ['RESERVED', 'PENDING_OFFCHAIN'])
+      .single()
 
-    if (allocationError) {
-      throw new Error(`Failed to create allocation: ${allocationError.message}`)
+    if (existingAllocation) {
+      // Update existing allocation - add more lots
+      const newLots = existingAllocation.lots + order.lots
+      const { error: updateAllocationError } = await supabaseClient
+        .from('property_allocations')
+        .update({ lots: newLots })
+        .eq('id', existingAllocation.id)
+
+      if (updateAllocationError) {
+        throw new Error(`Failed to update allocation: ${updateAllocationError.message}`)
+      }
+    } else {
+      // Create new allocation
+      const { error: allocationError } = await supabaseClient
+        .from('property_allocations')
+        .insert({
+          user_id: user.id,
+          property_id: order.property_id,
+          lots: order.lots,
+          status: 'RESERVED',
+          order_id: order.id,
+        })
+
+      if (allocationError) {
+        throw new Error(`Failed to create allocation: ${allocationError.message}`)
+      }
     }
 
     // Create audit log
