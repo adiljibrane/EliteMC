@@ -64,15 +64,29 @@ export const renderPropertyCards = (properties, container) => {
       ? ((property.lots_sold / property.total_lots) * 100).toFixed(1)
       : 0
 
-    const images = Array.isArray(property.images) ? property.images : []
-    const imageUrl = images[0] || '/assets/placeholders/property.jpg'
+    // Handle images array properly
+    let imageUrl = 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80'
+    if (property.images) {
+      if (Array.isArray(property.images) && property.images.length > 0) {
+        imageUrl = property.images[0]
+      } else if (typeof property.images === 'string' && property.images !== '[]') {
+        try {
+          const parsed = JSON.parse(property.images)
+          if (parsed.length > 0) imageUrl = parsed[0]
+        } catch (e) {
+          // If parsing fails, use as-is if it's a URL
+          if (property.images.startsWith('http')) imageUrl = property.images
+        }
+      }
+    }
 
     return `
       <div class="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer"
            onclick="window.location.href='/property?id=${property.id}'">
         <img src="${imageUrl}" alt="${property.title}"
              class="w-full h-48 object-cover"
-             onerror="this.src='/assets/placeholders/property.jpg'">
+             loading="lazy"
+             onerror="this.src='https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80'">
 
         <div class="p-6">
           <div class="flex justify-between items-start mb-2">
