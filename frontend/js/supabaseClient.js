@@ -68,6 +68,13 @@ export const publicImageUrl = (path) => {
     return null
   }
 
+  // If it's already a full URL, return it as-is
+  if (typeof path === 'string' && (path.startsWith('http://') || path.startsWith('https://'))) {
+    console.log('🔗 publicImageUrl: Already a full URL, returning as-is:', path)
+    return path
+  }
+
+  // Otherwise, build the URL from storage path
   const { data } = supabase.storage
     .from('properties')
     .getPublicUrl(path)
