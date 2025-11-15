@@ -59,15 +59,34 @@ export const renderPropertyCards = (properties, container) => {
     return
   }
 
+  // Debug: Log first property's image data
+  if (properties.length > 0) {
+    console.log('🖼️ Property images debug:', {
+      raw: properties[0].images,
+      type: typeof properties[0].images,
+      isArray: Array.isArray(properties[0].images)
+    })
+  }
+
   container.innerHTML = properties.map(property => {
     const progress = property.total_lots > 0
       ? ((property.lots_sold / property.total_lots) * 100).toFixed(1)
       : 0
 
+    // Parse images - handle both array and JSON string formats
+    let imagesArray = []
+    if (Array.isArray(property.images)) {
+      imagesArray = property.images
+    } else if (typeof property.images === 'string' && property.images.trim() !== '' && property.images !== '[]') {
+      try {
+        imagesArray = JSON.parse(property.images)
+      } catch (e) {
+        console.error('Failed to parse images:', property.images, e)
+      }
+    }
+
     // Get first image path from storage
-    const firstPath = Array.isArray(property.images) && property.images.length > 0
-      ? property.images[0]
-      : null
+    const firstPath = imagesArray.length > 0 ? imagesArray[0] : null
 
     // Build stable URL once using Supabase Storage public URL
     const imageUrl = publicImageUrl(firstPath) || '/assets/placeholders/property.svg'
