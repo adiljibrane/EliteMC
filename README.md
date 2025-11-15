@@ -81,7 +81,7 @@ In Supabase Dashboard → SQL Editor, run:
 In Supabase Dashboard → Storage:
 
 1. Create bucket: `bank-proofs` (public)
-2. Create bucket: `property-images` (public)
+2. Create bucket: `properties` (public) - for property images
 
 Set both buckets to **public** with these policies:
 ```sql
@@ -92,6 +92,36 @@ CREATE POLICY "Public Read" ON storage.objects FOR SELECT USING (true);
 CREATE POLICY "Authenticated Upload" ON storage.objects FOR INSERT
 WITH CHECK (auth.role() = 'authenticated');
 ```
+
+#### Storage Setup for Property Images
+
+The platform stores property images in the `properties` bucket. When adding properties via the admin panel, images are uploaded and stored with their file paths in the `properties.images` column as a JSONB array.
+
+**Bucket Configuration:**
+- **Bucket name:** `properties`
+- **Public access:** Yes (recommended for demo/MVP)
+- **Access policy:** Public read, authenticated upload
+
+**How images are stored:**
+1. Images are uploaded to Supabase Storage `properties` bucket
+2. File paths (e.g., `property-123/image-1.jpg`) are stored in `properties.images` as JSONB array
+3. Frontend uses `publicImageUrl()` helper to convert storage paths to public URLs
+4. If image fails to load, falls back to `/assets/placeholders/property.svg`
+
+**Using Signed URLs (for private buckets):**
+If you prefer to keep the bucket private, use signed URLs instead:
+```javascript
+import { signedImageUrl } from '/js/supabaseClient.js'
+
+// Generate signed URL with 1-hour expiry
+const imageUrl = await signedImageUrl(imagePath, 3600)
+```
+
+**Image format:**
+- Recommended: JPG, PNG, WebP
+- Max size: 5MB per image
+- Aspect ratio: 16:9 or 4:3
+- Resolution: 1200x800px minimum
 
 ### 6. Deploy Edge Functions
 

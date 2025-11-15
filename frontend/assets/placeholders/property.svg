@@ -1,0 +1,14 @@
+<svg width="1200" height="800" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="800" fill="#E5E7EB"/>
+  <g transform="translate(450, 250)">
+    <!-- House icon -->
+    <path d="M150 150 L150 270 L50 270 L50 170 L100 120 Z M50 170 L100 120 L150 170"
+          stroke="#9CA3AF" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="80" y="210" width="40" height="60" fill="#9CA3AF" rx="4"/>
+    <rect x="75" y="180" width="20" height="20" fill="#9CA3AF" rx="2"/>
+    <rect x="125" y="180" width="20" height="20" fill="#9CA3AF" rx="2"/>
+  </g>
+  <text x="600" y="520" font-family="Arial, sans-serif" font-size="28" fill="#6B7280" text-anchor="middle" font-weight="600">
+    Property Image
+  </text>
+</svg>

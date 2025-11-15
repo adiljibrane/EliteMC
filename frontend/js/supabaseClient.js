@@ -60,3 +60,30 @@ export const invokeEdgeFunction = async (functionName, payload = {}) => {
 
   return data
 }
+
+// Get public URL for storage object
+export const publicImageUrl = (path) => {
+  if (!path) return null
+
+  const { data } = supabase.storage
+    .from('properties')
+    .getPublicUrl(path)
+
+  return data?.publicUrl || null
+}
+
+// Get signed URL for private storage object (fallback if bucket is private)
+export const signedImageUrl = async (path, expiresIn = 3600) => {
+  if (!path) return null
+
+  const { data, error } = await supabase.storage
+    .from('properties')
+    .createSignedUrl(path, expiresIn)
+
+  if (error) {
+    console.error('Error creating signed URL:', error)
+    return null
+  }
+
+  return data?.signedUrl || null
+}

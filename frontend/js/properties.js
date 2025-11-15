@@ -2,7 +2,7 @@
 // Properties Module - Listing and Management
 // =====================================================
 
-import { supabase } from './supabaseClient.js'
+import { supabase, publicImageUrl } from './supabaseClient.js'
 import { formatMUR, formatDate, showSpinner, showEmptyState, getStatusBadge, createProgressBar } from './ui.js'
 
 // ========== Fetch All Properties ==========
@@ -64,21 +64,13 @@ export const renderPropertyCards = (properties, container) => {
       ? ((property.lots_sold / property.total_lots) * 100).toFixed(1)
       : 0
 
-    // Handle images array properly
-    let imageUrl = 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80'
-    if (property.images) {
-      if (Array.isArray(property.images) && property.images.length > 0) {
-        imageUrl = property.images[0]
-      } else if (typeof property.images === 'string' && property.images !== '[]') {
-        try {
-          const parsed = JSON.parse(property.images)
-          if (parsed.length > 0) imageUrl = parsed[0]
-        } catch (e) {
-          // If parsing fails, use as-is if it's a URL
-          if (property.images.startsWith('http')) imageUrl = property.images
-        }
-      }
-    }
+    // Get first image path from storage
+    const firstPath = Array.isArray(property.images) && property.images.length > 0
+      ? property.images[0]
+      : null
+
+    // Build stable URL once using Supabase Storage public URL
+    const imageUrl = publicImageUrl(firstPath) || '/assets/placeholders/property.svg'
 
     return `
       <div class="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer"
@@ -86,7 +78,7 @@ export const renderPropertyCards = (properties, container) => {
         <img src="${imageUrl}" alt="${property.title}"
              class="w-full h-48 object-cover"
              loading="lazy"
-             onerror="this.src='https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80'">
+             onerror="this.src='/assets/placeholders/property.svg'">
 
         <div class="p-6">
           <div class="flex justify-between items-start mb-2">
