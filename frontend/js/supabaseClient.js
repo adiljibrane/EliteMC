@@ -63,11 +63,20 @@ export const invokeEdgeFunction = async (functionName, payload = {}) => {
 
 // Get public URL for storage object
 export const publicImageUrl = (path) => {
-  if (!path) return null
+  if (!path) {
+    console.log('⚠️ publicImageUrl: No path provided')
+    return null
+  }
 
   const { data } = supabase.storage
     .from('properties')
     .getPublicUrl(path)
+
+  console.log('🔗 publicImageUrl:', {
+    input: path,
+    output: data?.publicUrl,
+    fullData: data
+  })
 
   return data?.publicUrl || null
 }

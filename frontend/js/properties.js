@@ -64,7 +64,8 @@ export const renderPropertyCards = (properties, container) => {
     console.log('🖼️ Property images debug:', {
       raw: properties[0].images,
       type: typeof properties[0].images,
-      isArray: Array.isArray(properties[0].images)
+      isArray: Array.isArray(properties[0].images),
+      firstProperty: properties[0].title
     })
   }
 
@@ -90,6 +91,16 @@ export const renderPropertyCards = (properties, container) => {
 
     // Build stable URL once using Supabase Storage public URL
     const imageUrl = publicImageUrl(firstPath) || '/assets/placeholders/property.svg'
+
+    // Debug: Log URL generation for first property
+    if (property === properties[0]) {
+      console.log('🔗 Image URL generation:', {
+        property: property.title,
+        firstPath: firstPath,
+        generatedUrl: imageUrl,
+        publicUrlResult: firstPath ? publicImageUrl(firstPath) : 'no path'
+      })
+    }
 
     return `
       <div class="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer"
