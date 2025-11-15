@@ -90,7 +90,10 @@ export const renderPropertyCards = (properties, container) => {
     const firstPath = imagesArray.length > 0 ? imagesArray[0] : null
 
     // Build stable URL once using Supabase Storage public URL
-    const imageUrl = publicImageUrl(firstPath) || '/assets/placeholders/property.svg'
+    // Fallback chain: Supabase Storage → Local placeholder → External placeholder
+    const imageUrl = publicImageUrl(firstPath)
+      || '/assets/placeholders/property.svg'
+      || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="1200" height="800"%3E%3Crect fill="%23e5e7eb" width="1200" height="800"/%3E%3Ctext x="50%25" y="50%25" font-family="Arial" font-size="28" fill="%236b7280" text-anchor="middle" dominant-baseline="middle"%3EProperty Image%3C/text%3E%3C/svg%3E'
 
     // Debug: Log URL generation for first property
     if (property === properties[0]) {
@@ -108,7 +111,7 @@ export const renderPropertyCards = (properties, container) => {
         <img src="${imageUrl}" alt="${property.title}"
              class="w-full h-48 object-cover"
              loading="lazy"
-             onerror="this.src='/assets/placeholders/property.svg'">
+             onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221200%22 height=%22800%22%3E%3Crect fill=%22%23e5e7eb%22 width=%221200%22 height=%22800%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-family=%22Arial%22 font-size=%2228%22 fill=%22%236b7280%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22%3EProperty Image%3C/text%3E%3C/svg%3E';">
 
         <div class="p-6">
           <div class="flex justify-between items-start mb-2">
