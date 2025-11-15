@@ -2,7 +2,7 @@
 // Properties Module - Listing and Management
 // =====================================================
 
-import { supabase, publicImageUrl } from './supabaseClient.js'
+import { supabase } from './supabaseClient.js'
 import { formatMUR, formatDate, showSpinner, showEmptyState, getStatusBadge, createProgressBar } from './ui.js'
 
 // ========== Fetch All Properties ==========
@@ -59,50 +59,15 @@ export const renderPropertyCards = (properties, container) => {
     return
   }
 
-  // Debug: Log first property's image data
-  if (properties.length > 0) {
-    console.log('🖼️ Property images debug:', {
-      raw: properties[0].images,
-      type: typeof properties[0].images,
-      isArray: Array.isArray(properties[0].images),
-      firstProperty: properties[0].title
-    })
-  }
-
   container.innerHTML = properties.map(property => {
     const progress = property.total_lots > 0
       ? ((property.lots_sold / property.total_lots) * 100).toFixed(1)
       : 0
 
-    // Parse images - handle both array and JSON string formats
-    let imagesArray = []
-    if (Array.isArray(property.images)) {
-      imagesArray = property.images
-    } else if (typeof property.images === 'string' && property.images.trim() !== '' && property.images !== '[]') {
-      try {
-        imagesArray = JSON.parse(property.images)
-      } catch (e) {
-        console.error('Failed to parse images:', property.images, e)
-      }
-    }
-
-    // Get first image path from storage
-    const firstPath = imagesArray.length > 0 ? imagesArray[0] : null
-
-    // Build stable URL once using Supabase Storage public URL
-    // Fallback chain: Supabase Storage → Local placeholder → External placeholder
-    const imageUrl = publicImageUrl(firstPath)
-      || '/assets/placeholders/property.svg'
-      || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="1200" height="800"%3E%3Crect fill="%23e5e7eb" width="1200" height="800"/%3E%3Ctext x="50%25" y="50%25" font-family="Arial" font-size="28" fill="%236b7280" text-anchor="middle" dominant-baseline="middle"%3EProperty Image%3C/text%3E%3C/svg%3E'
-
-    // Debug: Log URL generation for first property
-    if (property === properties[0]) {
-      console.log('🔗 Image URL generation:', {
-        property: property.title,
-        firstPath: firstPath,
-        generatedUrl: imageUrl,
-        publicUrlResult: firstPath ? publicImageUrl(firstPath) : 'no path'
-      })
+    // Get first image - already a full URL from database
+    let imageUrl = '/assets/placeholders/property.svg'
+    if (Array.isArray(property.images) && property.images.length > 0) {
+      imageUrl = property.images[0]
     }
 
     return `

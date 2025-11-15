@@ -63,14 +63,10 @@ export const invokeEdgeFunction = async (functionName, payload = {}) => {
 
 // Get public URL for storage object
 export const publicImageUrl = (path) => {
-  if (!path) {
-    console.log('⚠️ publicImageUrl: No path provided')
-    return null
-  }
+  if (!path) return null
 
   // If it's already a full URL, return it as-is
   if (typeof path === 'string' && (path.startsWith('http://') || path.startsWith('https://'))) {
-    console.log('🔗 publicImageUrl: Already a full URL, returning as-is:', path)
     return path
   }
 
@@ -78,12 +74,6 @@ export const publicImageUrl = (path) => {
   const { data } = supabase.storage
     .from('properties')
     .getPublicUrl(path)
-
-  console.log('🔗 publicImageUrl:', {
-    input: path,
-    output: data?.publicUrl,
-    fullData: data
-  })
 
   return data?.publicUrl || null
 }

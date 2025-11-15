@@ -51,7 +51,6 @@
     <script type="module">
         import { initAuth, requireAuth } from '/js/auth.js'
         import { fetchProperty } from '/js/properties.js'
-        import { publicImageUrl } from '/js/supabaseClient.js'
         import { formatMUR, getStatusBadge, createProgressBar, openModal, closeModal } from '/js/ui.js'
         import { setupBuyModal } from '/js/property-detail.js'
 
@@ -70,13 +69,11 @@
             try {
                 const property = await fetchProperty(propertyId)
 
-                // Get first image path from storage
-                const firstPath = Array.isArray(property.images) && property.images.length > 0
-                    ? property.images[0]
-                    : null
-
-                // Build stable URL using Supabase Storage public URL
-                const imageUrl = publicImageUrl(firstPath) || '/assets/placeholders/property.svg'
+                // Get first image - already a full URL from database
+                let imageUrl = '/assets/placeholders/property.svg'
+                if (Array.isArray(property.images) && property.images.length > 0) {
+                    imageUrl = property.images[0]
+                }
 
                 document.getElementById('content').innerHTML = `
                     <a href="/properties" class="text-indigo-600 hover:underline mb-4 inline-block">← Back to Properties</a>
