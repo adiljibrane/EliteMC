@@ -77,8 +77,18 @@
     </div>
 
     <script type="module">
-        import { handleSignIn, handleSignUp } from '/js/auth.js'
+        import { handleSignIn, handleSignUp, redirectIfLoggedIn } from '/js/auth.js'
         import { supabase } from '/js/supabaseClient.js'
+
+        // Redirect if user is already logged in (unless processing auth callback)
+        const hasAuthTokens = window.location.hash.includes('access_token')
+        if (!hasAuthTokens) {
+            const alreadyLoggedIn = await redirectIfLoggedIn('/properties')
+            if (alreadyLoggedIn) {
+                // User was redirected, stop execution
+                throw new Error('Redirecting logged-in user')
+            }
+        }
 
         // Handle magic link callback
         const handleAuthCallback = async () => {

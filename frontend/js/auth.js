@@ -11,9 +11,18 @@ export const initAuth = async () => {
   const session = await getSession()
   updateNavigation(session)
 
-  // Listen for auth state changes
+  // Listen for auth state changes and sync with localStorage
   supabase.auth.onAuthStateChange((_event, session) => {
     updateNavigation(session)
+
+    // Update localStorage for quick auth checks
+    if (session) {
+      localStorage.setItem('auth', '1')
+      localStorage.setItem('user_email', session.user?.email || '')
+    } else {
+      localStorage.removeItem('auth')
+      localStorage.removeItem('user_email')
+    }
   })
 }
 
@@ -202,4 +211,38 @@ export const getUserProfile = async () => {
   }
 
   return data
+}
+
+// ========== Session Check Helpers ==========
+
+// Check if user is currently logged in
+export const isLoggedIn = async () => {
+  const session = await getSession()
+  return !!session
+}
+
+// Get current user (null if not logged in)
+export const getCurrentUser = async () => {
+  return await getUser()
+}
+
+// Redirect to appropriate page based on login state
+export const redirectBasedOnAuth = async (loggedInUrl = '/properties', loggedOutUrl = '/login') => {
+  const session = await getSession()
+  if (session) {
+    window.location.href = loggedInUrl
+  } else {
+    window.location.href = loggedOutUrl
+  }
+}
+
+// Prevent logged-in users from accessing login/signup pages
+export const redirectIfLoggedIn = async (redirectTo = '/properties') => {
+  const session = await getSession()
+  if (session) {
+    console.log('User already logged in, redirecting to', redirectTo)
+    window.location.href = redirectTo
+    return true
+  }
+  return false
 }
