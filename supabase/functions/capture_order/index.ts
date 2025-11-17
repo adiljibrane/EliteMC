@@ -224,7 +224,7 @@ serve(async (req) => {
       .select('*')
       .eq('user_id', user.id)
       .eq('property_id', order.property_id)
-      .in('status', ['RESERVED', 'PENDING_OFFCHAIN'])
+      .in('status', ['RESERVED', 'SETTLED_OFFCHAIN'])
       .maybeSingle()
 
     if (allocationQueryError) {
