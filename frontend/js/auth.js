@@ -227,7 +227,7 @@ export const getCurrentUser = async () => {
 }
 
 // Redirect to appropriate page based on login state
-export const redirectBasedOnAuth = async (loggedInUrl = '/properties', loggedOutUrl = '/login') => {
+export const redirectBasedOnAuth = async (loggedInUrl = '/wallet', loggedOutUrl = '/login') => {
   const session = await getSession()
   if (session) {
     window.location.href = loggedInUrl
@@ -237,7 +237,7 @@ export const redirectBasedOnAuth = async (loggedInUrl = '/properties', loggedOut
 }
 
 // Prevent logged-in users from accessing login/signup pages
-export const redirectIfLoggedIn = async (redirectTo = '/properties') => {
+export const redirectIfLoggedIn = async (redirectTo = '/wallet') => {
   const session = await getSession()
   if (session) {
     console.log('User already logged in, redirecting to', redirectTo)

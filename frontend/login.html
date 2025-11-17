@@ -83,7 +83,7 @@
         // Redirect if user is already logged in (unless processing auth callback)
         const hasAuthTokens = window.location.hash.includes('access_token')
         if (!hasAuthTokens) {
-            const alreadyLoggedIn = await redirectIfLoggedIn('/properties')
+            const alreadyLoggedIn = await redirectIfLoggedIn('/wallet')
             if (alreadyLoggedIn) {
                 // User was redirected, stop execution
                 throw new Error('Redirecting logged-in user')
