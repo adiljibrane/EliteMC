@@ -2,7 +2,7 @@
 // Admin Module - Guards & Common Functions
 // =====================================================
 
-import { supabase, invokeEdgeFunction } from './supabaseClient.js'
+import { supabase, invokeEdgeFunction, requireUser } from './supabaseClient.js'
 import { showSuccess, showError, formatMUR, formatDate } from './ui.js'
 
 // ========== Admin Guard (already in auth.js, but duplicated for convenience) ==========
@@ -30,8 +30,7 @@ export const requireAdmin = async () => {
 
 export const createProperty = async (propertyData) => {
   try {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('Not authenticated')
+    const user = await requireUser()
 
     const { data, error } = await supabase
       .from('properties')

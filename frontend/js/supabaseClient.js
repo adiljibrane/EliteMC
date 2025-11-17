@@ -22,6 +22,13 @@ export const getUser = async () => {
   return user
 }
 
+// Require authenticated user (throws if not authenticated)
+export const requireUser = async () => {
+  const user = await getUser()
+  if (!user) throw new Error('Not authenticated')
+  return user
+}
+
 // Check if user is admin
 export const isAdmin = async () => {
   const user = await getUser()
