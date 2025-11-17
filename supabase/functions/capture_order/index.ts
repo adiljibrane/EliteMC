@@ -219,13 +219,17 @@ serve(async (req) => {
 
     // Create or update property allocation
     // Check if user already has an allocation for this property
-    const { data: existingAllocation } = await supabaseClient
+    const { data: existingAllocation, error: allocationQueryError } = await supabaseClient
       .from('property_allocations')
       .select('*')
       .eq('user_id', user.id)
       .eq('property_id', order.property_id)
       .in('status', ['RESERVED', 'PENDING_OFFCHAIN'])
-      .single()
+      .maybeSingle()
+
+    if (allocationQueryError) {
+      throw new Error(`Failed to query allocation: ${allocationQueryError.message}`)
+    }
 
     if (existingAllocation) {
       // Update existing allocation - add more lots
