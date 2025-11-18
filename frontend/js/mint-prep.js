@@ -2,7 +2,7 @@
 // Mint Preparation Module - Blockchain-Ready
 // =====================================================
 
-import { supabase } from './supabaseClient.js'
+import { supabase, requireUser } from './supabaseClient.js'
 import { showSuccess, showError, showWarning } from './ui.js'
 import { fetchPropertyAllocations } from './properties.js'
 
@@ -193,8 +193,7 @@ export const connectPolkadotWallet = async () => {
 
 export const saveWalletAddress = async (walletSS58) => {
   try {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('Not authenticated')
+    const user = await requireUser()
 
     const { data, error } = await supabase
       .from('profiles')

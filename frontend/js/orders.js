@@ -2,15 +2,14 @@
 // Orders Module
 // =====================================================
 
-import { supabase } from './supabaseClient.js'
+import { supabase, requireUser } from './supabaseClient.js'
 import { formatMUR, formatDateTime, showEmptyState, getStatusBadge } from './ui.js'
 
 // ========== Fetch User Orders ==========
 
 export const fetchOrders = async (filters = {}) => {
   try {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('Not authenticated')
+    const user = await requireUser()
 
     let query = supabase
       .from('orders')
@@ -115,8 +114,7 @@ export const renderOrdersTable = (orders, container) => {
 
 export const fetchOrderStats = async () => {
   try {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('Not authenticated')
+    const user = await requireUser()
 
     const { data: orders, error } = await supabase
       .from('orders')

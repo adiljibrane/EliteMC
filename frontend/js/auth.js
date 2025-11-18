@@ -11,9 +11,26 @@ export const initAuth = async () => {
   const session = await getSession()
   updateNavigation(session)
 
-  // Listen for auth state changes
-  supabase.auth.onAuthStateChange((_event, session) => {
+  // Ensure profile exists for current user
+  if (session) {
+    await ensureUserProfile()
+  }
+
+  // Listen for auth state changes and sync with localStorage
+  supabase.auth.onAuthStateChange(async (_event, session) => {
     updateNavigation(session)
+
+    // Update localStorage for quick auth checks
+    if (session) {
+      localStorage.setItem('auth', '1')
+      localStorage.setItem('user_email', session.user?.email || '')
+
+      // Ensure profile exists when user logs in
+      await ensureUserProfile()
+    } else {
+      localStorage.removeItem('auth')
+      localStorage.removeItem('user_email')
+    }
   })
 }
 
@@ -89,7 +106,7 @@ export const handleSignUp = async (email, fullName, phone, button) => {
   try {
     disableButton(button, 'Registering...')
 
-    // Sign up with OTP
+    // Sign up with OTP - user metadata will be stored in auth.users
     const { data, error } = await supabase.auth.signInWithOtp({
       email,
       options: {
@@ -103,32 +120,7 @@ export const handleSignUp = async (email, fullName, phone, button) => {
 
     if (error) throw error
 
-    // Create profile
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      const { error: profileError } = await supabase.from('profiles').insert({
-        user_id: user.id,
-        full_name: fullName,
-        email: email,
-        phone: phone,
-      })
-
-      if (profileError && !profileError.message.includes('duplicate')) {
-        console.error('Profile creation error:', profileError)
-      }
-
-      // Create initial balance
-      const { error: balanceError } = await supabase.from('fiat_balances').insert({
-        user_id: user.id,
-        available: '0',
-        locked: '0',
-      })
-
-      if (balanceError && !balanceError.message.includes('duplicate')) {
-        console.error('Balance creation error:', balanceError)
-      }
-    }
-
+    // Note: Profile will be created after user clicks magic link and session is established
     showSuccess('Account created! Check your email for the login link.')
     return true
   } catch (error) {
@@ -136,6 +128,77 @@ export const handleSignUp = async (email, fullName, phone, button) => {
     return false
   } finally {
     enableButton(button)
+  }
+}
+
+// ========== Ensure User Profile Exists ==========
+
+export const ensureUserProfile = async () => {
+  try {
+    const user = await getUser()
+    if (!user) return null
+
+    // Check if profile exists
+    const { data: existingProfile, error: fetchError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      console.error('Error fetching profile:', fetchError)
+      return null
+    }
+
+    // If profile exists, return it
+    if (existingProfile) {
+      return existingProfile
+    }
+
+    // Create profile if it doesn't exist
+    console.log('Creating profile for user:', user.email)
+    const { data: newProfile, error: profileError } = await supabase
+      .from('profiles')
+      .insert({
+        user_id: user.id,
+        full_name: user.user_metadata?.full_name || '',
+        email: user.email,
+        phone: user.user_metadata?.phone || '',
+      })
+      .select()
+      .maybeSingle()
+
+    if (profileError) {
+      console.error('Profile creation error:', profileError)
+      // If it's a duplicate error, try fetching again
+      if (profileError.message?.includes('duplicate')) {
+        const { data: retryProfile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle()
+        if (retryProfile) return retryProfile
+      }
+      return null
+    }
+
+    // Create initial balance
+    const { error: balanceError } = await supabase
+      .from('fiat_balances')
+      .insert({
+        user_id: user.id,
+        available: '0',
+        locked: '0',
+      })
+
+    if (balanceError && !balanceError.message?.includes('duplicate')) {
+      console.error('Balance creation error:', balanceError)
+    }
+
+    return newProfile
+  } catch (error) {
+    console.error('Error ensuring user profile:', error)
+    return null
   }
 }
 
@@ -202,4 +265,49 @@ export const getUserProfile = async () => {
   }
 
   return data
+}
+
+// ========== Session Check Helpers ==========
+
+// Check if user is currently logged in
+export const isLoggedIn = async () => {
+  const session = await getSession()
+  return !!session
+}
+
+// Get current user (null if not logged in)
+export const getCurrentUser = async () => {
+  return await getUser()
+}
+
+// Redirect to appropriate page based on login state
+export const redirectBasedOnAuth = async (loggedInUrl = '/wallet', loggedOutUrl = '/login') => {
+  const session = await getSession()
+  if (session) {
+    window.location.href = loggedInUrl
+  } else {
+    window.location.href = loggedOutUrl
+  }
+}
+
+// Prevent logged-in users from accessing login/signup pages
+export const redirectIfLoggedIn = async (redirectTo = '/wallet') => {
+  const session = await getSession()
+  if (session) {
+    console.log('User already logged in, redirecting to', redirectTo)
+    window.location.href = redirectTo
+    return true
+  }
+  return false
+}
+
+// Setup smart logo redirect (logged in -> wallet, logged out -> home)
+export const setupSmartLogo = () => {
+  const logoLink = document.querySelector('#logo-link, a[href="/index"], a[href="/"]')
+  if (logoLink) {
+    logoLink.addEventListener('click', async (e) => {
+      e.preventDefault()
+      await redirectBasedOnAuth('/wallet', '/')
+    })
+  }
 }
