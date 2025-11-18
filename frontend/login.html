@@ -77,7 +77,7 @@
     </div>
 
     <script type="module">
-        import { handleSignIn, handleSignUp, redirectIfLoggedIn } from '/js/auth.js'
+        import { handleSignIn, handleSignUp, redirectIfLoggedIn, ensureUserProfile } from '/js/auth.js'
         import { supabase } from '/js/supabaseClient.js'
 
         // Redirect if user is already logged in (unless processing auth callback)
@@ -124,6 +124,9 @@
 
                     console.log('✅ Session established successfully!')
                     console.log('👤 User:', data.user?.email)
+
+                    // Ensure user profile and balance exist
+                    await ensureUserProfile()
 
                     // Redirect to properties page
                     alert('✅ Successfully logged in! Redirecting...')

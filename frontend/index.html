@@ -103,7 +103,7 @@
     </footer>
 
     <script type="module">
-        import { initAuth, redirectBasedOnAuth } from '/js/auth.js'
+        import { initAuth, redirectBasedOnAuth, ensureUserProfile } from '/js/auth.js'
         import { fetchProperties, renderPropertyCards } from '/js/properties.js'
         import { supabase } from '/js/supabaseClient.js'
 
@@ -141,6 +141,9 @@
 
                     console.log('✅ Session established successfully!')
                     console.log('👤 User:', data.user?.email)
+
+                    // Ensure user profile and balance exist
+                    await ensureUserProfile()
 
                     // Clear hash and redirect to properties
                     alert('✅ Successfully logged in! Redirecting...')

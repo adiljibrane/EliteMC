@@ -11,14 +11,22 @@ export const initAuth = async () => {
   const session = await getSession()
   updateNavigation(session)
 
+  // Ensure profile exists for current user
+  if (session) {
+    await ensureUserProfile()
+  }
+
   // Listen for auth state changes and sync with localStorage
-  supabase.auth.onAuthStateChange((_event, session) => {
+  supabase.auth.onAuthStateChange(async (_event, session) => {
     updateNavigation(session)
 
     // Update localStorage for quick auth checks
     if (session) {
       localStorage.setItem('auth', '1')
       localStorage.setItem('user_email', session.user?.email || '')
+
+      // Ensure profile exists when user logs in
+      await ensureUserProfile()
     } else {
       localStorage.removeItem('auth')
       localStorage.removeItem('user_email')
@@ -98,7 +106,7 @@ export const handleSignUp = async (email, fullName, phone, button) => {
   try {
     disableButton(button, 'Registering...')
 
-    // Sign up with OTP
+    // Sign up with OTP - user metadata will be stored in auth.users
     const { data, error } = await supabase.auth.signInWithOtp({
       email,
       options: {
@@ -112,32 +120,7 @@ export const handleSignUp = async (email, fullName, phone, button) => {
 
     if (error) throw error
 
-    // Create profile
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      const { error: profileError } = await supabase.from('profiles').insert({
-        user_id: user.id,
-        full_name: fullName,
-        email: email,
-        phone: phone,
-      })
-
-      if (profileError && !profileError.message.includes('duplicate')) {
-        console.error('Profile creation error:', profileError)
-      }
-
-      // Create initial balance
-      const { error: balanceError } = await supabase.from('fiat_balances').insert({
-        user_id: user.id,
-        available: '0',
-        locked: '0',
-      })
-
-      if (balanceError && !balanceError.message.includes('duplicate')) {
-        console.error('Balance creation error:', balanceError)
-      }
-    }
-
+    // Note: Profile will be created after user clicks magic link and session is established
     showSuccess('Account created! Check your email for the login link.')
     return true
   } catch (error) {
@@ -145,6 +128,77 @@ export const handleSignUp = async (email, fullName, phone, button) => {
     return false
   } finally {
     enableButton(button)
+  }
+}
+
+// ========== Ensure User Profile Exists ==========
+
+export const ensureUserProfile = async () => {
+  try {
+    const user = await getUser()
+    if (!user) return null
+
+    // Check if profile exists
+    const { data: existingProfile, error: fetchError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      console.error('Error fetching profile:', fetchError)
+      return null
+    }
+
+    // If profile exists, return it
+    if (existingProfile) {
+      return existingProfile
+    }
+
+    // Create profile if it doesn't exist
+    console.log('Creating profile for user:', user.email)
+    const { data: newProfile, error: profileError } = await supabase
+      .from('profiles')
+      .insert({
+        user_id: user.id,
+        full_name: user.user_metadata?.full_name || '',
+        email: user.email,
+        phone: user.user_metadata?.phone || '',
+      })
+      .select()
+      .maybeSingle()
+
+    if (profileError) {
+      console.error('Profile creation error:', profileError)
+      // If it's a duplicate error, try fetching again
+      if (profileError.message?.includes('duplicate')) {
+        const { data: retryProfile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle()
+        if (retryProfile) return retryProfile
+      }
+      return null
+    }
+
+    // Create initial balance
+    const { error: balanceError } = await supabase
+      .from('fiat_balances')
+      .insert({
+        user_id: user.id,
+        available: '0',
+        locked: '0',
+      })
+
+    if (balanceError && !balanceError.message?.includes('duplicate')) {
+      console.error('Balance creation error:', balanceError)
+    }
+
+    return newProfile
+  } catch (error) {
+    console.error('Error ensuring user profile:', error)
+    return null
   }
 }
 
