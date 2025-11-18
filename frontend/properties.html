@@ -62,7 +62,7 @@
     </div>
 
     <script type="module">
-        import { initAuth } from '/js/auth.js'
+        import { initAuth, setupSmartLogo } from '/js/auth.js'
         import { fetchProperties, renderPropertyCards } from '/js/properties.js'
         import { supabase } from '/js/supabaseClient.js'
 
@@ -120,6 +120,7 @@
         // Handle auth callback first, then initialize
         await handleAuthCallback()
         initAuth()
+        setupSmartLogo()
 
         async function loadProperties() {
             const status = document.getElementById('filter-status').value

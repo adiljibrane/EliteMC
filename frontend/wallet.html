@@ -118,12 +118,13 @@
     </div>
 
     <script type="module">
-        import { initAuth, requireAuth } from '/js/auth.js'
+        import { initAuth, requireAuth, setupSmartLogo } from '/js/auth.js'
         import { fetchBalance, renderLedgerTable, fetchLedger, fetchDeposits, renderDepositsTable, submitDeposit, fetchPortfolio, renderPortfolio } from '/js/wallet.js'
         import { formatMUR } from '/js/ui.js'
 
         await requireAuth()
         initAuth()
+        setupSmartLogo()
 
         async function loadWalletData() {
             // Load balance

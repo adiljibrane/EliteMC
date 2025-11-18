@@ -65,12 +65,13 @@
     </div>
 
     <script type="module">
-        import { initAuth, requireAuth } from '/js/auth.js'
+        import { initAuth, requireAuth, setupSmartLogo } from '/js/auth.js'
         import { fetchOrders, renderOrdersTable, fetchOrderStats } from '/js/orders.js'
         import { formatMUR } from '/js/ui.js'
 
         await requireAuth()
         initAuth()
+        setupSmartLogo()
 
         async function loadOrders() {
             const status = document.getElementById('filter-status').value
