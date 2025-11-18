@@ -303,7 +303,7 @@ export const redirectIfLoggedIn = async (redirectTo = '/wallet') => {
 
 // Setup smart logo redirect (logged in -> wallet, logged out -> home)
 export const setupSmartLogo = () => {
-  const logoLink = document.querySelector('a[href="/"], a[href="#"][id*="logo"]')
+  const logoLink = document.querySelector('#logo-link, a[href="/index"], a[href="/"]')
   if (logoLink) {
     logoLink.addEventListener('click', async (e) => {
       e.preventDefault()
