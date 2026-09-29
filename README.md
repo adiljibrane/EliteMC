@@ -15,7 +15,8 @@ EliteMC Cooperative is a blockchain-ready property investment platform that enab
 - ✅ **Fiat Wallet System** - Internal MUR balance management
 - ✅ **Bank Deposit Matching** - Admin approval workflow
 - ✅ **Property Listings** - Create and manage investment properties
-- ✅ **Fractional Lot Purchases** - Buy property lots using internal balance
+- ✅ **Cooperative Membership** - Application, admin approval, share capital, member number
+- ✅ **Fractional Lot Purchases** - Active members buy property lots using internal balance
 - ✅ **Off-Chain Cap Table** - Track all ownership allocations
 - ✅ **Dividend Distribution** - Pro-rata dividend calculations and payouts
 - ✅ **Audit Logging** - Complete trail of admin actions
@@ -75,6 +76,14 @@ In Supabase Dashboard → SQL Editor, run:
 ```sql
 -- Copy and paste contents of sql/schema.sql
 ```
+
+Then run `sql/membership.sql`. It adds the membership register and restricts lot purchases to active members.
+Before going live, set the share capital amount from the cooperative's registered rules:
+```sql
+UPDATE coop_settings SET share_capital_mur = <amount>;
+```
+
+**Membership flow:** member applies at `/membership` → admin approves at `/admin/members` → member pays share capital by bank transfer → admin records the payment → member becomes `ACTIVE` with a member number (e.g. `EMC-00001`) and can buy lots.
 
 ### 5. Create Storage Buckets
 
@@ -193,6 +202,7 @@ python3 -m http.server 8000 --directory frontend
 EliteMC/
 ├── sql/
 │   ├── schema.sql          # Complete database schema with RLS
+│   ├── membership.sql      # Membership register + member-only purchase rules (run after schema.sql)
 │   └── seed.sql            # Demo data for testing
 ├── supabase/
 │   ├── functions/

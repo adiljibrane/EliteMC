@@ -28,6 +28,17 @@ export const formatDateTime = (dateString) => {
   })
 }
 
+// Escape user-supplied text before inserting into innerHTML
+export const escapeHtml = (value) => {
+  if (value === null || value === undefined) return ''
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 // ========== Toast Notifications ==========
 
 export const showToast = (message, type = 'info') => {
@@ -217,8 +228,10 @@ export const getStatusBadge = (status) => {
     'MATCHED': { label: 'Matched', color: 'bg-green-200 text-green-800' },
     'REJECTED': { label: 'Rejected', color: 'bg-red-200 text-red-800' },
 
-    // KYC statuses
+    // KYC / membership statuses
     'APPROVED': { label: 'Approved', color: 'bg-green-200 text-green-800' },
+    'ACTIVE': { label: 'Active Member', color: 'bg-indigo-200 text-indigo-800' },
+    'SUSPENDED': { label: 'Suspended', color: 'bg-red-200 text-red-800' },
   }
 
   const config = statusConfig[status] || { label: status, color: 'bg-gray-200 text-gray-700' }

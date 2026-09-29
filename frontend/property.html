@@ -53,6 +53,8 @@
         import { fetchProperty } from '/js/properties.js'
         import { formatMUR, getStatusBadge, createProgressBar, openModal, closeModal } from '/js/ui.js'
         import { setupBuyModal } from '/js/property-detail.js'
+        import { getMyMembership, renderMemberOnlyNotice } from '/js/membership.js'
+        import { getSession } from '/js/supabaseClient.js'
 
         initAuth()
 
@@ -68,6 +70,9 @@
         async function loadProperty() {
             try {
                 const property = await fetchProperty(propertyId)
+                const session = await getSession()
+                const membership = session ? await getMyMembership() : null
+                const canBuy = property.status === 'OPEN' && membership?.status === 'ACTIVE'
 
                 // Get first image - already a full URL from database
                 let imageUrl = '/assets/placeholders/property.svg'
@@ -110,11 +115,11 @@
                                 </div>
                             </div>
 
-                            ${property.status === 'OPEN' ? `
+                            ${canBuy ? `
                                 <button onclick="window.openBuyModal()" class="w-full px-6 py-4 bg-indigo-600 text-white rounded-2xl font-bold text-lg hover:bg-indigo-700 transition">
                                     Buy Lots Now
                                 </button>
-                            ` : `
+                            ` : property.status === 'OPEN' ? renderMemberOnlyNotice(membership) : `
                                 <div class="bg-gray-100 rounded-xl p-4 text-center text-gray-600">
                                     This property is not currently open for investment
                                 </div>
@@ -123,7 +128,7 @@
                     </div>
                 `
 
-                if (property.status === 'OPEN') {
+                if (canBuy) {
                     await setupBuyModal(property)
                     window.openBuyModal = () => openModal('buy-modal')
                 }

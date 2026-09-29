@@ -87,6 +87,21 @@ INSERT INTO properties (id, title, location, description, images, price_per_lot,
 ON CONFLICT (id) DO NOTHING;
 
 -- =====================================================
+-- Membership register (requires sql/membership.sql)
+-- Alice and Bob are active members; Charlie's application is pending
+-- =====================================================
+
+INSERT INTO memberships (user_id, member_number, status, national_id, date_of_birth, address, rules_accepted_at,
+                         share_capital_required_mur, share_capital_paid_mur, share_capital_ref, share_capital_paid_on, activated_at) VALUES
+('00000000-0000-0000-0000-000000000002', 'EMC-' || lpad(nextval('member_number_seq')::text, 5, '0'), 'ACTIVE', 'D0101850000001', '1985-01-01', 'Port Louis', NOW(), 1000.00, 1000.00, 'SEED-SHARE-1', CURRENT_DATE, NOW()),
+('00000000-0000-0000-0000-000000000003', 'EMC-' || lpad(nextval('member_number_seq')::text, 5, '0'), 'ACTIVE', 'C0202900000002', '1990-02-02', 'Quatre Bornes', NOW(), 1000.00, 1000.00, 'SEED-SHARE-2', CURRENT_DATE, NOW())
+ON CONFLICT (user_id) DO NOTHING;
+
+INSERT INTO memberships (user_id, status, national_id, date_of_birth, address, rules_accepted_at) VALUES
+('00000000-0000-0000-0000-000000000004', 'PENDING', 'K0303950000003', '1995-03-03', 'Curepipe', NOW())
+ON CONFLICT (user_id) DO NOTHING;
+
+-- =====================================================
 -- STEP 4: Create demo orders and allocations
 -- =====================================================
 

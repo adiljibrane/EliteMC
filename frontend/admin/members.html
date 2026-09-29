@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <base href="/">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Members - EliteMC Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="/admin/dashboard" class="text-2xl font-bold text-indigo-600">EliteMC Admin</a>
+                <div id="auth-links" class="flex items-center gap-4"></div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="bg-indigo-600 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="text-4xl font-bold mb-2">Membership Register</h1>
+            <p class="text-indigo-100">Review applications, record share capital, and manage members</p>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <a href="/admin/dashboard" class="text-indigo-600 hover:underline mb-4 inline-block">← Back to Dashboard</a>
+
+        <!-- Filters -->
+        <div class="bg-white rounded-2xl shadow-md p-6 mb-8">
+            <div class="flex gap-4">
+                <select id="filter-status" class="px-4 py-2 rounded-xl border border-gray-300">
+                    <option value="">All</option>
+                    <option value="PENDING" selected>Pending review</option>
+                    <option value="APPROVED">Awaiting share capital</option>
+                    <option value="ACTIVE">Active members</option>
+                    <option value="SUSPENDED">Suspended</option>
+                    <option value="REJECTED">Rejected</option>
+                </select>
+                <button id="apply-filter" class="px-6 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">
+                    Refresh
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-md p-6">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Members & Applications</h3>
+            <div id="members-container"></div>
+        </div>
+    </div>
+
+    <!-- Share Capital Modal -->
+    <div id="share-capital-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
+            <h3 class="text-2xl font-bold mb-2">Record Share Capital</h3>
+            <p class="text-sm text-gray-600 mb-4">Only record payments you have confirmed on the bank statement.</p>
+            <form id="share-capital-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Amount (MUR)</label>
+                    <input type="number" id="sc-amount" min="0.01" step="0.01" required class="w-full px-4 py-2 rounded-xl border border-gray-300">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Bank Reference</label>
+                    <input type="text" id="sc-bank-ref" required class="w-full px-4 py-2 rounded-xl border border-gray-300">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Date Received</label>
+                    <input type="date" id="sc-paid-on" required class="w-full px-4 py-2 rounded-xl border border-gray-300">
+                </div>
+                <div class="flex gap-3">
+                    <button type="button" onclick="window.closeShareCapitalModal()" class="flex-1 px-4 py-2 rounded-xl border border-gray-300 hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="submit" id="sc-submit" class="flex-1 px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">
+                        Record Payment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initAuth, requireAdmin } from '/js/auth.js'
+        import { openModal, closeModal, disableButton, enableButton } from '/js/ui.js'
+        import {
+            fetchMemberships, renderMembershipsTable, approveMember, rejectMember,
+            recordShareCapital, suspendMember, reinstateMember,
+        } from '/js/members-admin.js'
+
+        await requireAdmin()
+        initAuth()
+
+        let memberships = []
+        let shareCapitalUserId = null
+
+        async function loadMembers() {
+            const status = document.getElementById('filter-status').value || null
+            memberships = await fetchMemberships(status)
+            renderMembershipsTable(memberships, document.getElementById('members-container'))
+        }
+
+        const runAndReload = (action) => async (userId) => {
+            const result = await action(userId)
+            if (result) await loadMembers()
+        }
+
+        window.approveMember = runAndReload(approveMember)
+        window.rejectMember = runAndReload(rejectMember)
+        window.suspendMember = runAndReload(suspendMember)
+        window.reinstateMember = runAndReload(reinstateMember)
+
+        window.openShareCapitalModal = (userId) => {
+            shareCapitalUserId = userId
+            const m = memberships.find(x => x.user_id === userId)
+            const outstanding = m
+                ? parseFloat(m.share_capital_required_mur) - parseFloat(m.share_capital_paid_mur)
+                : ''
+            document.getElementById('sc-amount').value = outstanding
+            document.getElementById('sc-bank-ref').value = ''
+            document.getElementById('sc-paid-on').value = new Date().toISOString().slice(0, 10)
+            openModal('share-capital-modal')
+        }
+
+        window.closeShareCapitalModal = () => closeModal('share-capital-modal')
+
+        document.getElementById('share-capital-form').addEventListener('submit', async (e) => {
+            e.preventDefault()
+            const button = document.getElementById('sc-submit')
+            disableButton(button, 'Saving...')
+            try {
+                const result = await recordShareCapital(
+                    shareCapitalUserId,
+                    parseFloat(document.getElementById('sc-amount').value),
+                    document.getElementById('sc-bank-ref').value.trim(),
+                    document.getElementById('sc-paid-on').value,
+                )
+                if (result) {
+                    closeModal('share-capital-modal')
+                    await loadMembers()
+                }
+            } finally {
+                enableButton(button)
+            }
+        })
+
+        document.getElementById('apply-filter').addEventListener('click', loadMembers)
+        loadMembers()
+    </script>
+</body>
+</html>

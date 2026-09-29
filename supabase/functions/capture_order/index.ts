@@ -147,6 +147,21 @@ serve(async (req) => {
       )
     }
 
+    // Only active cooperative members can pay for lots
+    // (membership may have been suspended after the order was created)
+    const { data: membership } = await supabaseClient
+      .from('memberships')
+      .select('status')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (membership?.status !== 'ACTIVE') {
+      return new Response(
+        JSON.stringify({ error: 'Only active cooperative members can purchase lots' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const totalPrice = parseFloat(order.total_price_mur)
 
     // Fetch user balance

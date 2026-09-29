@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <base href="/">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Membership - EliteMC Cooperative</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="/index" class="text-2xl font-bold text-indigo-600">EliteMC</a>
+                <div id="auth-links" class="flex items-center gap-4"></div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="bg-indigo-600 text-white py-12">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="text-4xl font-bold mb-2">Cooperative Membership</h1>
+            <p class="text-indigo-100">Only active members of the cooperative can co-own properties</p>
+        </div>
+    </div>
+
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        <div id="status-container"></div>
+
+        <!-- Application Form -->
+        <div id="application-section" class="hidden bg-white rounded-2xl shadow-md p-6">
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">Apply for Membership</h3>
+            <p id="share-capital-info" class="text-sm text-gray-600 mb-6"></p>
+
+            <form id="application-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Full Name (as on ID)</label>
+                    <input type="text" id="full-name" required class="w-full px-4 py-2 rounded-xl border border-gray-300">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Phone</label>
+                    <input type="tel" id="phone" class="w-full px-4 py-2 rounded-xl border border-gray-300">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">National ID Number</label>
+                    <input type="text" id="national-id" required class="w-full px-4 py-2 rounded-xl border border-gray-300">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Date of Birth</label>
+                    <input type="date" id="date-of-birth" required class="w-full px-4 py-2 rounded-xl border border-gray-300">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Residential Address</label>
+                    <textarea id="address" rows="3" required class="w-full px-4 py-2 rounded-xl border border-gray-300"></textarea>
+                </div>
+                <label class="flex items-start gap-3 text-sm text-gray-700">
+                    <input type="checkbox" id="accept-rules" required class="mt-1">
+                    <span>I have read and agree to abide by the rules of EliteMC Cooperative, and I confirm the information above is accurate.</span>
+                </label>
+                <button type="submit" id="submit-application" class="w-full px-6 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700">
+                    Submit Application
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initAuth, requireAuth, getUserProfile } from '/js/auth.js'
+        import { getMyMembership, getCoopSettings, submitApplication, renderMembershipStatus } from '/js/membership.js'
+        import { formatMUR } from '/js/ui.js'
+
+        const session = await requireAuth()
+        initAuth()
+
+        async function load() {
+            const [membership, settings, profile] = await Promise.all([
+                getMyMembership(),
+                getCoopSettings(),
+                getUserProfile(),
+            ])
+
+            const statusContainer = document.getElementById('status-container')
+            const applicationSection = document.getElementById('application-section')
+
+            if (membership) {
+                renderMembershipStatus(membership, statusContainer)
+            } else {
+                statusContainer.innerHTML = ''
+            }
+
+            const canApply = !membership || membership.status === 'REJECTED'
+            applicationSection.classList.toggle('hidden', !canApply)
+            if (!canApply) return
+
+            if (settings) {
+                document.getElementById('share-capital-info').textContent =
+                    `Once your application is approved, you will pay a one-time share capital of ${formatMUR(settings.share_capital_mur)}. Applicants must be at least ${settings.min_member_age} years old.`
+            }
+
+            if (profile) {
+                document.getElementById('full-name').value = profile.full_name || ''
+                document.getElementById('phone').value = profile.phone || ''
+            } else if (session?.user?.user_metadata) {
+                document.getElementById('full-name').value = session.user.user_metadata.full_name || ''
+                document.getElementById('phone').value = session.user.user_metadata.phone || ''
+            }
+
+            if (membership) {
+                document.getElementById('national-id').value = membership.national_id || ''
+                document.getElementById('date-of-birth').value = membership.date_of_birth || ''
+                document.getElementById('address').value = membership.address || ''
+            }
+        }
+
+        document.getElementById('application-form').addEventListener('submit', async (e) => {
+            e.preventDefault()
+            const button = document.getElementById('submit-application')
+
+            const result = await submitApplication({
+                fullName: document.getElementById('full-name').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                nationalId: document.getElementById('national-id').value.trim(),
+                dateOfBirth: document.getElementById('date-of-birth').value,
+                address: document.getElementById('address').value.trim(),
+                acceptRules: document.getElementById('accept-rules').checked,
+            }, button)
+
+            if (result) await load()
+        })
+
+        if (session) load()
+    </script>
+</body>
+</html>

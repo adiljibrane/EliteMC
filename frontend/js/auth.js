@@ -33,6 +33,7 @@ const updateNavigation = async (session) => {
       <a href="/properties" class="text-gray-700 hover:text-indigo-600 transition">Properties</a>
       <a href="/wallet" class="text-gray-700 hover:text-indigo-600 transition">Wallet</a>
       <a href="/orders" class="text-gray-700 hover:text-indigo-600 transition">Orders</a>
+      <a href="/membership" class="text-gray-700 hover:text-indigo-600 transition">Membership</a>
       ${admin ? '<a href="/admin/dashboard" class="text-indigo-600 font-semibold hover:text-indigo-700 transition">Admin</a>' : ''}
       <button id="logout-btn" class="px-4 py-2 rounded-xl bg-gray-200 hover:bg-gray-300 transition">
         Logout
