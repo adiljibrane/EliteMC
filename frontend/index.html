@@ -13,7 +13,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center">
-                    <h1 class="text-2xl font-bold text-indigo-600">EliteMC</h1>
+                    <a href="#" id="logo-link" class="text-2xl font-bold text-indigo-600 cursor-pointer hover:text-indigo-700 transition">EliteMC</a>
                 </div>
                 <div id="auth-links" class="flex items-center gap-4">
                     <!-- Auth links will be inserted here -->
@@ -34,9 +34,9 @@
                 <a href="/properties" class="px-8 py-4 bg-white text-indigo-600 rounded-2xl font-semibold hover:bg-gray-100 transition shadow-lg">
                     Browse Properties
                 </a>
-                <a href="/login" class="px-8 py-4 bg-transparent border-2 border-white rounded-2xl font-semibold hover:bg-white hover:text-indigo-600 transition">
+                <button id="get-started-btn" class="px-8 py-4 bg-transparent border-2 border-white rounded-2xl font-semibold hover:bg-white hover:text-indigo-600 transition">
                     Get Started
-                </a>
+                </button>
             </div>
         </div>
     </section>
@@ -88,9 +88,9 @@
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h3 class="text-4xl font-bold mb-6">Ready to Start Investing?</h3>
             <p class="text-xl mb-8">Join EliteMC Cooperative and build your real estate portfolio today.</p>
-            <a href="/login" class="inline-block px-8 py-4 bg-white text-indigo-600 rounded-2xl font-semibold hover:bg-gray-100 transition shadow-lg">
+            <button id="create-account-btn" class="inline-block px-8 py-4 bg-white text-indigo-600 rounded-2xl font-semibold hover:bg-gray-100 transition shadow-lg">
                 Create Free Account
-            </a>
+            </button>
         </div>
     </section>
 
@@ -103,7 +103,7 @@
     </footer>
 
     <script type="module">
-        import { initAuth } from '/js/auth.js'
+        import { initAuth, redirectBasedOnAuth, ensureUserProfile, setupSmartLogo } from '/js/auth.js'
         import { fetchProperties, renderPropertyCards } from '/js/properties.js'
         import { supabase } from '/js/supabaseClient.js'
 
@@ -142,6 +142,9 @@
                     console.log('✅ Session established successfully!')
                     console.log('👤 User:', data.user?.email)
 
+                    // Ensure user profile and balance exist
+                    await ensureUserProfile()
+
                     // Clear hash and redirect to properties
                     alert('✅ Successfully logged in! Redirecting...')
                     window.location.href = '/properties'
@@ -162,6 +165,25 @@
         if (!authHandled) {
             // Initialize auth
             initAuth()
+
+            // Setup smart logo redirect
+            setupSmartLogo()
+
+            // Setup CTA button handlers
+            const getStartedBtn = document.getElementById('get-started-btn')
+            const createAccountBtn = document.getElementById('create-account-btn')
+
+            if (getStartedBtn) {
+                getStartedBtn.addEventListener('click', async () => {
+                    await redirectBasedOnAuth('/wallet', '/login')
+                })
+            }
+
+            if (createAccountBtn) {
+                createAccountBtn.addEventListener('click', async () => {
+                    await redirectBasedOnAuth('/wallet', '/login')
+                })
+            }
         }
 
         // Load featured properties

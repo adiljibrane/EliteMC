@@ -64,6 +64,8 @@ export const renderPropertyCards = (properties, container) => {
       ? ((property.lots_sold / property.total_lots) * 100).toFixed(1)
       : 0
 
+    const lotsAvailable = property.total_lots - property.lots_sold
+
     // Get first image - already a full URL from database
     let imageUrl = '/assets/placeholders/property.svg'
     if (Array.isArray(property.images) && property.images.length > 0) {
@@ -93,13 +95,13 @@ export const renderPropertyCards = (properties, container) => {
 
           <div class="mb-4">
             <div class="flex justify-between text-sm mb-1">
-              <span class="text-gray-600">Progress</span>
-              <span class="font-semibold">${progress}%</span>
+              <span class="text-gray-600">Availability</span>
+              <span class="font-semibold">${lotsAvailable} of ${property.total_lots} lots</span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
               <div class="bg-indigo-600 h-2 rounded-full transition-all" style="width: ${progress}%"></div>
             </div>
-            <p class="text-xs text-gray-500 mt-1">${property.lots_sold} / ${property.total_lots} lots sold</p>
+            <p class="text-xs text-gray-500 mt-1">${progress}% funded</p>
           </div>
 
           <div class="flex justify-between items-end">

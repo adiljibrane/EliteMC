@@ -2,15 +2,14 @@
 // Property Detail & Buy Flow Module
 // =====================================================
 
-import { supabase, invokeEdgeFunction } from './supabaseClient.js'
+import { supabase, invokeEdgeFunction, requireUser } from './supabaseClient.js'
 import { formatMUR, showSuccess, showError, disableButton, enableButton, openModal, closeModal } from './ui.js'
 
 // ========== Create Order ==========
 
 export const createOrder = async (propertyId, lots, unitPrice) => {
   try {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('Not authenticated')
+    const user = await requireUser()
 
     const { data, error } = await supabase
       .from('orders')

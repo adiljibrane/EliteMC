@@ -2,15 +2,14 @@
 // Wallet Module - Balance, Ledger, Deposits
 // =====================================================
 
-import { supabase } from './supabaseClient.js'
+import { supabase, requireUser } from './supabaseClient.js'
 import { formatMUR, formatDateTime, showSuccess, showError, showSpinner, showEmptyState, getStatusBadge, disableButton, enableButton } from './ui.js'
 
 // ========== Fetch User Balance ==========
 
 export const fetchBalance = async () => {
   try {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('Not authenticated')
+    const user = await requireUser()
 
     const { data, error } = await supabase
       .from('fiat_balances')
@@ -42,8 +41,7 @@ export const fetchBalance = async () => {
 
 export const fetchLedger = async (filters = {}) => {
   try {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('Not authenticated')
+    const user = await requireUser()
 
     let query = supabase
       .from('fiat_ledger')
@@ -114,8 +112,7 @@ export const renderLedgerTable = (entries, container) => {
 
 export const fetchDeposits = async () => {
   try {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('Not authenticated')
+    const user = await requireUser()
 
     const { data, error } = await supabase
       .from('bank_deposits')
@@ -178,8 +175,7 @@ export const submitDeposit = async (bankRef, amount, receivedDate, proofFile, bu
   try {
     disableButton(button, 'Submitting...')
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('Not authenticated')
+    const user = await requireUser()
 
     let proofUrl = null
 
@@ -231,8 +227,7 @@ export const submitDeposit = async (bankRef, amount, receivedDate, proofFile, bu
 
 export const fetchPortfolio = async () => {
   try {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('Not authenticated')
+    const user = await requireUser()
 
     const { data, error } = await supabase
       .from('user_portfolios')
