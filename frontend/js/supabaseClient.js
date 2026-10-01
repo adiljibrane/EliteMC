@@ -2,7 +2,7 @@
 // Supabase Client Configuration
 // =====================================================
 
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+import { createClient } from '@supabase/supabase-js'
 
 // IMPORTANT: Replace these with your actual Supabase credentials
 const SUPABASE_URL = 'https://riizybdrtikrcnrztcme.supabase.co'

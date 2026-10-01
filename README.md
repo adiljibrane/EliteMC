@@ -27,7 +27,6 @@ Members of EliteMC Cooperative apply for membership, pay share capital, take up 
 - **Node.js** 18+ and npm
 - **Supabase Account** (free tier works)
 - **Supabase CLI** - Install: `npm install -g supabase`
-- **Local HTTP Server** - VS Code Live Server or `npx serve`
 
 ---
 
@@ -173,20 +172,19 @@ WHERE email = 'admin@elitemc.mu';
 ### 9. Start Frontend
 
 ```bash
-# Option 1: VS Code Live Server (recommended)
-# Right-click frontend/index.html → "Open with Live Server"
-
-# Option 2: npx serve
-npx serve frontend -p 8000
-
-# Option 3: Python
-python3 -m http.server 8000 --directory frontend
+npm install
+npm run dev        # development server with live reload (http://localhost:5173)
+npm run build      # production build into dist/ (what Vercel/Netlify deploy)
+npm run preview    # serve the production build locally
 ```
+
+Tailwind is compiled at build time (`tailwind.config.js`, `frontend/styles.css`) and
+`@supabase/supabase-js` comes from npm - no CDN scripts. Static files live in `frontend/public/`.
 
 ### 10. Access the Application
 
-- **Homepage:** http://localhost:8000/index.html
-- **Admin Dashboard:** http://localhost:8000/admin/dashboard.html
+- **Homepage:** http://localhost:5173/
+- **Admin Dashboard:** http://localhost:5173/admin/dashboard
 
 ---
 

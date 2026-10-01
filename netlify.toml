@@ -2,9 +2,8 @@
 # Alternative to Vercel deployment
 
 [build]
-  base = "frontend"
-  publish = "."
-  command = "echo 'No build needed for static site'"
+  publish = "dist"
+  command = "npm run build"
 
 [[redirects]]
   from = "/"
@@ -30,24 +29,12 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "geolocation=(), microphone=(), camera=()"
 
+# Built JS/CSS have content-hashed names under /assets, so long caching is safe
 [[headers]]
-  for = "/js/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "*.css"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "*.svg"
+  for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
 [dev]
-  command = "npx serve . -p 8888"
-  port = 8888
-  targetPort = 8888
-  publish = "."
-  autoLaunch = true
+  command = "npm run dev"
+  targetPort = 5173
