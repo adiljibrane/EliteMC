@@ -30,19 +30,6 @@ if [ -z "$ACCESS_TOKEN" ]; then
 fi
 
 echo ""
-echo "1️⃣  Testing capture_order function..."
-echo "-----------------------------------"
-curl -X POST \
-  "${SUPABASE_URL}/functions/v1/capture_order" \
-  -H "Authorization: Bearer ${ACCESS_TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "order_id": "00000000-0000-0000-0000-000000000000",
-    "idempotency_key": "test-key-' $(date +%s) '"
-  }' 2>/dev/null | jq '.' || echo "Function not deployed or error occurred"
-
-echo ""
-echo ""
 echo "2️⃣  Testing match_deposit function..."
 echo "-----------------------------------"
 curl -X POST \

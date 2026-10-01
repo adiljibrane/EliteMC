@@ -47,9 +47,7 @@ echo "📦 Deploying Edge Functions..."
 echo ""
 
 # Deploy each function
-echo "  → Deploying capture_order..."
-supabase functions deploy capture_order
-
+# (Lot purchases run in the purchase_lots() database function - sql/purchase.sql)
 echo "  → Deploying match_deposit..."
 supabase functions deploy match_deposit
 

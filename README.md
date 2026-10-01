@@ -77,7 +77,7 @@ In Supabase Dashboard → SQL Editor, run:
 -- Copy and paste contents of sql/schema.sql
 ```
 
-Then run `sql/membership.sql`. It adds the membership register and restricts lot purchases to active members.
+Then run `sql/membership.sql` (membership register; only active members can buy lots), then `sql/purchase.sql` (atomic lot purchase: no overselling, no partial payments).
 Before going live, set the share capital amount from the cooperative's registered rules:
 ```sql
 UPDATE coop_settings SET share_capital_mur = <amount>;
@@ -141,8 +141,7 @@ supabase login
 # Link your project
 supabase link --project-ref your-project-ref
 
-# Deploy functions
-supabase functions deploy capture_order
+# Deploy functions (lot purchases run in the purchase_lots() database function)
 supabase functions deploy match_deposit
 supabase functions deploy calculate_dividends
 
@@ -206,7 +205,6 @@ EliteMC/
 │   └── seed.sql            # Demo data for testing
 ├── supabase/
 │   ├── functions/
-│   │   ├── capture_order/index.ts       # Pay for orders
 │   │   ├── match_deposit/index.ts       # Match bank deposits
 │   │   └── calculate_dividends/index.ts # Distribute dividends
 │   └── types.ts            # TypeScript type definitions
@@ -472,10 +470,10 @@ WHERE property_id = ?
 
 ```bash
 # Check function logs
-supabase functions logs capture_order
+supabase functions logs match_deposit
 
 # Redeploy
-supabase functions deploy capture_order --no-verify-jwt
+supabase functions deploy match_deposit --no-verify-jwt
 ```
 
 ### RLS Blocking Queries

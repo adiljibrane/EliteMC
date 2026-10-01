@@ -2,69 +2,33 @@
 // Property Detail & Buy Flow Module
 // =====================================================
 
-import { supabase, invokeEdgeFunction, requireUser } from './supabaseClient.js'
+import { supabase } from './supabaseClient.js'
 import { formatMUR, showSuccess, showError, disableButton, enableButton, openModal, closeModal } from './ui.js'
 
-// ========== Create Order ==========
+// ========== Purchase Lots ==========
+// One atomic database call (sql/purchase.sql): membership, availability,
+// balance, order, wallet debit, ledger and allocation succeed or fail together.
 
-export const createOrder = async (propertyId, lots, unitPrice) => {
-  try {
-    const user = await requireUser()
+export const purchaseLots = async (propertyId, lots, idempotencyKey) => {
+  const { data, error } = await supabase.rpc('purchase_lots', {
+    p_property_id: propertyId,
+    p_lots: lots,
+    p_idempotency_key: idempotencyKey,
+  })
 
-    const { data, error } = await supabase
-      .from('orders')
-      .insert({
-        user_id: user.id,
-        property_id: propertyId,
-        lots: lots,
-        unit_price_mur: unitPrice.toString(),
-        status: 'PENDING_PAYMENT',
-      })
-      .select()
-      .single()
-
-    if (error) throw error
-    return data
-  } catch (error) {
-    console.error('Error creating order:', error)
-    throw error
-  }
-}
-
-// ========== Capture Order (Pay) ==========
-
-export const captureOrder = async (orderId, idempotencyKey = null) => {
-  try {
-    const payload = {
-      order_id: orderId,
-    }
-
-    if (idempotencyKey) {
-      payload.idempotency_key = idempotencyKey
-    }
-
-    const result = await invokeEdgeFunction('capture_order', payload)
-    return result
-  } catch (error) {
-    console.error('Error capturing order:', error)
-    throw error
-  }
+  if (error) throw error
+  return data
 }
 
 // ========== Handle Buy Flow ==========
 
-export const handleBuyProperty = async (propertyId, lots, unitPrice, button) => {
+export const handleBuyProperty = async (propertyId, lots, idempotencyKey, button) => {
   try {
     disableButton(button, 'Processing...')
 
-    // Step 1: Create order
-    const order = await createOrder(propertyId, lots, unitPrice)
+    const result = await purchaseLots(propertyId, lots, idempotencyKey)
 
-    // Step 2: Capture payment
-    const idempotencyKey = `${order.id}-${Date.now()}`
-    const result = await captureOrder(order.id, idempotencyKey)
-
-    showSuccess(`Purchase successful! You now own ${lots} lot(s).`)
+    showSuccess(`Purchase successful! You now own ${result.lots} more lot(s).`)
 
     // Close modal and refresh
     closeModal('buy-modal')
@@ -75,7 +39,7 @@ export const handleBuyProperty = async (propertyId, lots, unitPrice, button) => 
     return result
   } catch (error) {
     showError(error.message || 'Purchase failed')
-    throw error
+    return null
   } finally {
     enableButton(button)
   }
@@ -144,6 +108,9 @@ export const setupBuyModal = async (property) => {
   lotsInput.addEventListener('input', updateTotalPrice)
   updateTotalPrice()
 
+  // One key per page load: double taps and retries can't charge twice
+  const idempotencyKey = crypto.randomUUID()
+
   // Handle buy button click
   buyButton.addEventListener('click', async () => {
     const lots = parseInt(lotsInput.value)
@@ -161,6 +128,6 @@ export const setupBuyModal = async (property) => {
       return
     }
 
-    await handleBuyProperty(property.id, lots, property.price_per_lot, buyButton)
+    await handleBuyProperty(property.id, lots, idempotencyKey, buyButton)
   })
 }
