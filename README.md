@@ -1,33 +1,24 @@
-# EliteMC Cooperative - Property Investment Platform
+# EliteMC Cooperative - Members Platform
 
-**Production-Ready MVP for Fractional Real Estate Ownership in Mauritius**
+**Cooperative property co-ownership in Mauritius**
 
-EliteMC Cooperative is a blockchain-ready property investment platform that enables fractional ownership of real estate in Mauritius. Built with vanilla HTML/JS and Supabase, with future integration for Polkadot Asset Hub.
+Members of EliteMC Cooperative apply for membership, pay share capital, take up lots in properties the cooperative acquires, and receive their share of net income. Ownership is recorded in the cooperative's own database (the `property_allocations` cap table). Built with vanilla HTML/JS and Supabase.
 
 ---
 
 ## 🚀 Features
 
-### Phase 1: Off-Chain (Current MVP)
 
 - ✅ **Email OTP Authentication** - Passwordless login via Supabase Auth
-- ✅ **User Profiles** - KYC status, wallet addresses (blockchain-ready)
+- ✅ **User Profiles** - KYC status
 - ✅ **Fiat Wallet System** - Internal MUR balance management
 - ✅ **Bank Deposit Matching** - Admin approval workflow
-- ✅ **Property Listings** - Create and manage investment properties
+- ✅ **Property Listings** - Create and manage cooperative properties
 - ✅ **Cooperative Membership** - Application, admin approval, share capital, member number
 - ✅ **Fractional Lot Purchases** - Active members buy property lots using internal balance
-- ✅ **Off-Chain Cap Table** - Track all ownership allocations
+- ✅ **Cap Table** - Every member's lots per property; settled automatically when a property is marked FUNDED
 - ✅ **Dividend Distribution** - Pro-rata dividend calculations and payouts
 - ✅ **Audit Logging** - Complete trail of admin actions
-- ✅ **Blockchain-Ready Structure** - Database fields for Asset Hub integration
-
-### Phase 2: On-Chain (Future)
-
-- 🔜 Polkadot Asset Hub token minting
-- 🔜 On-chain ownership transfer
-- 🔜 Wallet integration (@polkadot/extension-dapp)
-- 🔜 Indexer for transaction confirmation
 
 ---
 
@@ -77,7 +68,11 @@ In Supabase Dashboard → SQL Editor, run:
 -- Copy and paste contents of sql/schema.sql
 ```
 
-Then run `sql/membership.sql` (membership register; only active members can buy lots), then `sql/purchase.sql` (atomic lot purchase: no overselling, no partial payments).
+Then run, in order:
+1. `sql/membership.sql`: membership register; only active members can buy lots
+2. `sql/purchase.sql`: atomic lot purchase (no overselling, no partial payments) and automatic settlement when a property is marked FUNDED
+
+**Existing database created before the blockchain removal?** Run `sql/remove_blockchain.sql` between steps 1 and 2. It refuses to run if any on-chain data (minted tokens, transfers, asset IDs) exists.
 Before going live, set the share capital amount from the cooperative's registered rules:
 ```sql
 UPDATE coop_settings SET share_capital_mur = <amount>;
@@ -220,7 +215,6 @@ EliteMC/
 │   │   ├── deposits.html   # Match deposits
 │   │   ├── properties.html # Manage properties
 │   │   ├── dividends.html  # Distribute dividends
-│   │   └── mint-prep.html  # Blockchain prep
 │   └── js/
 │       ├── supabaseClient.js   # Supabase config
 │       ├── ui.js               # UI utilities
@@ -232,7 +226,6 @@ EliteMC/
 │       ├── admin.js            # Admin utilities
 │       ├── deposits-admin.js   # Deposit matching
 │       ├── dividends-admin.js  # Dividend distribution
-│       └── mint-prep.js        # Blockchain prep
 ├── .env.example
 ├── .gitignore
 └── README.md
@@ -256,9 +249,8 @@ EliteMC/
 1. **Create Property** → Set price, lots, description
 2. **Publish Property** → Change status to OPEN
 3. **Match Deposits** → Review and approve submissions
-4. **Close Property** → When fully subscribed
-5. **Distribute Dividends** → Calculate pro-rata payouts
-6. **Prepare for Minting** → Export CSV, check wallet readiness
+4. **Mark Property FUNDED** → When fully subscribed; all reserved lots become settled
+5. **Distribute Dividends** → Calculate pro-rata payouts to settled lots
 
 ---
 
@@ -365,56 +357,6 @@ As Admin:
 
 ---
 
-## 🔗 Blockchain Integration (Phase 2)
-
-### Architecture
-
-```
-EliteMC Platform → Polkadot.js API → Asset Hub Testnet/Mainnet
-```
-
-### Steps to Integrate
-
-1. **Install Dependencies**
-```bash
-npm install @polkadot/api @polkadot/extension-dapp
-```
-
-2. **Create Asset on Asset Hub**
-```javascript
-const api = await ApiPromise.create({ provider: wsProvider })
-const assetId = await api.tx.assets.create(...)
-```
-
-3. **Mint Tokens**
-```javascript
-await api.tx.assets.mint(assetId, totalSupply)
-```
-
-4. **Batch Transfer**
-```javascript
-const transfers = allocations.map(a =>
-  api.tx.assets.transfer(assetId, a.wallet, a.lots)
-)
-await api.tx.utility.batch(transfers)
-```
-
-5. **Record On-Chain Data**
-```sql
-UPDATE properties SET asset_hub_asset_id = ? WHERE id = ?
-UPDATE property_allocations SET
-  onchain_tx_hash = ?,
-  onchain_block = ?,
-  status = 'ONCHAIN_SETTLED'
-WHERE property_id = ?
-```
-
-6. **Set Up Indexer**
-- Use SubQuery or similar to monitor transactions
-- Confirm transfers and update database
-
----
-
 ## 🛠️ Admin How-Tos
 
 ### How to Publish a New Property
@@ -437,8 +379,9 @@ WHERE property_id = ?
 
 1. Go to Admin → Properties
 2. Find the property
-3. Change status to **CLOSED**
-4. No more purchases allowed
+3. Change status to **FUNDED** and confirm
+4. Sales stop and every reserved lot becomes **SETTLED** (eligible for dividends)
+5. Use **CLOSED** later when the property is sold or wound up
 
 ### How to Distribute Dividends
 
@@ -450,17 +393,6 @@ WHERE property_id = ?
 6. Review allocations
 7. Click **Confirm & Distribute**
 8. Users receive payouts (internal credit or manual bank transfer)
-
-### How to Prepare for Blockchain Minting
-
-1. Go to Admin → Mint Prep
-2. Select property with status **READY_TO_MINT**
-3. Check wallet readiness
-4. Export CSV of allocations
-5. Connect admin wallet (future)
-6. Create Asset Hub asset
-7. Mint and distribute tokens
-8. Update property status to **MINTED**
 
 ---
 
@@ -555,8 +487,7 @@ profiles (user data, KYC, wallet)
 properties (real estate listings)
     ↓
 ├─ property_allocations (ownership)
-├─ dividend_statements (income periods)
-└─ token_mint_batches (blockchain records)
+└─ dividend_statements (income periods)
 ```
 
 ---
@@ -578,14 +509,12 @@ For issues or questions:
 
 ## 🎉 Congratulations!
 
-You now have a production-ready MVP for fractional property investment. Next steps:
+Next steps:
 
 1. Customize branding and colors
 2. Add more property details (images, documents)
 3. Integrate payment gateway for deposits
-4. Build mobile app (React Native + same Supabase backend)
-5. Integrate Polkadot Asset Hub for on-chain tokens
-6. Add SMS notifications
-7. Implement KYC verification flow
+4. Member engagement: progress tracker, announcements, events, suggestion box, messages, notifications
+5. Native iOS/Android app (Capacitor + same Supabase backend)
 
 **Happy Building! 🏗️**

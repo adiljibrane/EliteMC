@@ -1,6 +1,6 @@
 -- =====================================================
 -- EliteMC Cooperative - Database Schema
--- Phase 1: Off-Chain with Blockchain-Ready Structure
+-- Share ownership tracked in property_allocations (cap table)
 -- =====================================================
 
 -- Enable necessary extensions
@@ -13,10 +13,9 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TYPE kyc_status_enum AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
 CREATE TYPE deposit_status_enum AS ENUM ('PENDING', 'MATCHED', 'REJECTED');
 CREATE TYPE ledger_direction_enum AS ENUM ('CREDIT', 'DEBIT');
-CREATE TYPE property_status_enum AS ENUM ('DRAFT', 'OPEN', 'READY_TO_MINT', 'MINTED', 'CLOSED');
+CREATE TYPE property_status_enum AS ENUM ('DRAFT', 'OPEN', 'FUNDED', 'CLOSED');
 CREATE TYPE order_status_enum AS ENUM ('PENDING_PAYMENT', 'PAID', 'CANCELLED', 'FAILED');
-CREATE TYPE allocation_status_enum AS ENUM ('RESERVED', 'SETTLED_OFFCHAIN', 'ONCHAIN_SETTLED', 'REVOKED');
-CREATE TYPE mint_batch_status_enum AS ENUM ('PLANNED', 'SUBMITTED', 'CONFIRMED', 'FAILED');
+CREATE TYPE allocation_status_enum AS ENUM ('RESERVED', 'SETTLED', 'REVOKED');
 CREATE TYPE payout_method_enum AS ENUM ('BANK_TRANSFER', 'INTERNAL_CREDIT');
 
 -- =====================================================
@@ -30,7 +29,6 @@ CREATE TABLE profiles (
     email TEXT UNIQUE NOT NULL,
     phone TEXT,
     kyc_status kyc_status_enum NOT NULL DEFAULT 'PENDING',
-    wallet_ss58 TEXT, -- Polkadot SS58 address (blockchain-ready)
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -83,10 +81,6 @@ CREATE TABLE properties (
     target_raise_mur NUMERIC(18,2) GENERATED ALWAYS AS (price_per_lot * total_lots) STORED,
     status property_status_enum NOT NULL DEFAULT 'DRAFT',
 
-    -- Blockchain-ready fields
-    asset_hub_asset_id BIGINT, -- Polkadot Asset Hub asset ID
-    decimals INTEGER DEFAULT 0,
-
     created_by UUID NOT NULL REFERENCES profiles(user_id),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -115,37 +109,7 @@ CREATE TABLE property_allocations (
     order_id UUID REFERENCES orders(id),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
-    -- Blockchain fields
-    onchain_tx_hash TEXT,
-    onchain_block BIGINT,
-
     UNIQUE(user_id, property_id, status) -- One active allocation per user per property
-);
-
--- Token Mint Batches (Blockchain-ready)
-CREATE TABLE token_mint_batches (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    property_id UUID NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
-    asset_id BIGINT NOT NULL, -- Asset Hub asset ID
-    total_minted BIGINT NOT NULL,
-    signer_wallet TEXT NOT NULL,
-    extrinsic_hash TEXT,
-    status mint_batch_status_enum NOT NULL DEFAULT 'PLANNED',
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    confirmed_at TIMESTAMPTZ
-);
-
--- Token Transfers (Blockchain-ready)
-CREATE TABLE token_transfers (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    property_id UUID NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
-    user_id UUID NOT NULL REFERENCES profiles(user_id) ON DELETE CASCADE,
-    asset_id BIGINT NOT NULL,
-    amount BIGINT NOT NULL,
-    extrinsic_hash TEXT,
-    confirmed BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    confirmed_at TIMESTAMPTZ
 );
 
 -- Dividend Statements
@@ -275,8 +239,6 @@ ALTER TABLE fiat_ledger ENABLE ROW LEVEL SECURITY;
 ALTER TABLE properties ENABLE ROW LEVEL SECURITY;
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE property_allocations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE token_mint_batches ENABLE ROW LEVEL SECURITY;
-ALTER TABLE token_transfers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE dividend_statements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE dividend_payouts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_log ENABLE ROW LEVEL SECURITY;
@@ -380,24 +342,6 @@ CREATE POLICY "Admins can view all allocations"
     ON property_allocations FOR SELECT
     USING (is_admin());
 
--- Token Mint Batches RLS
-CREATE POLICY "Admins can view all mint batches"
-    ON token_mint_batches FOR ALL
-    USING (is_admin());
-
--- Token Transfers RLS
-CREATE POLICY "Users can view their own transfers"
-    ON token_transfers FOR SELECT
-    USING (auth.uid() = user_id);
-
-CREATE POLICY "Admins can view all transfers"
-    ON token_transfers FOR SELECT
-    USING (is_admin());
-
-CREATE POLICY "Service role can manage transfers"
-    ON token_transfers FOR ALL
-    USING (auth.jwt()->>'role' = 'service_role');
-
 -- Dividend Statements RLS
 CREATE POLICY "Anyone can view dividend statements"
     ON dividend_statements FOR SELECT
@@ -449,7 +393,7 @@ SELECT
     p.updated_at
 FROM properties p
 LEFT JOIN property_allocations pa ON p.id = pa.property_id
-    AND pa.status IN ('RESERVED', 'SETTLED_OFFCHAIN', 'ONCHAIN_SETTLED')
+    AND pa.status IN ('RESERVED', 'SETTLED')
 GROUP BY p.id;
 
 -- User portfolio
@@ -466,11 +410,11 @@ SELECT
     p.status AS property_status
 FROM property_allocations pa
 JOIN properties p ON pa.property_id = p.id
-WHERE pa.status IN ('RESERVED', 'SETTLED_OFFCHAIN', 'ONCHAIN_SETTLED')
+WHERE pa.status IN ('RESERVED', 'SETTLED')
 GROUP BY pa.user_id, pa.property_id, p.title, p.location, p.price_per_lot, pa.status, p.status;
 
 -- =====================================================
 -- INITIAL SETUP
 -- =====================================================
 
-COMMENT ON DATABASE postgres IS 'EliteMC Cooperative - Property Investment Platform';
+COMMENT ON DATABASE postgres IS 'EliteMC Cooperative - Members Platform';

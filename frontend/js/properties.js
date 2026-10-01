@@ -146,7 +146,7 @@ export const fetchPropertyAllocations = async (propertyId) => {
       .from('property_allocations')
       .select(`
         *,
-        profiles:user_id (full_name, email, wallet_ss58)
+        profiles:user_id (full_name, email)
       `)
       .eq('property_id', propertyId)
       .order('created_at', { ascending: false })

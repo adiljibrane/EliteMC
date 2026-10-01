@@ -1,6 +1,7 @@
 -- =====================================================
 -- EliteMC Cooperative - Atomic Lot Purchase
--- Run AFTER membership.sql.
+-- Run AFTER membership.sql (and, on databases created before the blockchain
+-- removal, after remove_blockchain.sql).
 --
 -- Replaces the old two-step flow (client inserts order -> capture_order
 -- Edge Function makes 4 separate writes). purchase_lots() does everything
@@ -80,7 +81,7 @@ BEGIN
     SELECT COALESCE(SUM(lots), 0) INTO v_lots_sold
     FROM property_allocations
     WHERE property_id = p_property_id
-      AND status IN ('RESERVED', 'SETTLED_OFFCHAIN', 'ONCHAIN_SETTLED');
+      AND status IN ('RESERVED', 'SETTLED');
 
     v_lots_available := v_property.total_lots - v_lots_sold;
     IF p_lots > v_lots_available THEN
@@ -137,3 +138,52 @@ $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 REVOKE EXECUTE ON FUNCTION purchase_lots(UUID, INTEGER, TEXT) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION purchase_lots(UUID, INTEGER, TEXT) TO authenticated;
+
+-- =====================================================
+-- SETTLEMENT
+-- When a property's funding closes (status -> FUNDED), every RESERVED
+-- allocation for it becomes SETTLED in the same transaction. Only SETTLED
+-- allocations receive dividends. Being a trigger, this happens however the
+-- status is changed (admin page, SQL editor), so it cannot be forgotten.
+-- =====================================================
+
+CREATE OR REPLACE FUNCTION settle_allocations_on_funded()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_count INTEGER;
+    v_merged INTEGER;
+BEGIN
+    IF NEW.status = 'FUNDED' AND OLD.status IS DISTINCT FROM 'FUNDED' THEN
+        -- A member may already hold SETTLED lots from an earlier funding round.
+        -- Allocations are unique per (member, property, status), so merge their
+        -- new RESERVED lots into the existing SETTLED row first.
+        UPDATE property_allocations settled SET lots = settled.lots + reserved.lots
+        FROM property_allocations reserved
+        WHERE settled.property_id = NEW.id AND settled.status = 'SETTLED'
+          AND reserved.property_id = NEW.id AND reserved.status = 'RESERVED'
+          AND reserved.user_id = settled.user_id;
+        GET DIAGNOSTICS v_merged = ROW_COUNT;
+
+        DELETE FROM property_allocations reserved
+        USING property_allocations settled
+        WHERE reserved.property_id = NEW.id AND reserved.status = 'RESERVED'
+          AND settled.property_id = NEW.id AND settled.status = 'SETTLED'
+          AND settled.user_id = reserved.user_id;
+
+        UPDATE property_allocations SET status = 'SETTLED'
+        WHERE property_id = NEW.id AND status = 'RESERVED';
+        GET DIAGNOSTICS v_count = ROW_COUNT;
+
+        INSERT INTO audit_log (actor_user_id, action, target_table, target_id, details)
+        VALUES (auth.uid(), 'property_funded', 'properties', NEW.id,
+                jsonb_build_object('allocations_settled', v_count, 'allocations_merged', v_merged));
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+DROP TRIGGER IF EXISTS settle_allocations_on_funded ON properties;
+CREATE TRIGGER settle_allocations_on_funded
+    AFTER UPDATE OF status ON properties
+    FOR EACH ROW
+    EXECUTE FUNCTION settle_allocations_on_funded();

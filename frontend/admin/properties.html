@@ -170,7 +170,7 @@
                                 <select onchange="window.updateStatus('${p.id}', this.value)" class="px-3 py-1 rounded-lg border">
                                     <option value="DRAFT" ${p.status === 'DRAFT' ? 'selected' : ''}>Draft</option>
                                     <option value="OPEN" ${p.status === 'OPEN' ? 'selected' : ''}>Open</option>
-                                    <option value="READY_TO_MINT" ${p.status === 'READY_TO_MINT' ? 'selected' : ''}>Ready to Mint</option>
+                                    <option value="FUNDED" ${p.status === 'FUNDED' ? 'selected' : ''}>Funded (settles all lots)</option>
                                     <option value="CLOSED" ${p.status === 'CLOSED' ? 'selected' : ''}>Closed</option>
                                 </select>
                             </div>
@@ -195,6 +195,10 @@
         }
 
         window.updateStatus = async (propertyId, newStatus) => {
+            if (newStatus === 'FUNDED' && !window.confirm('Mark as FUNDED? Sales stop and every reserved lot becomes settled (eligible for dividends). This cannot be undone from here.')) {
+                await loadProperties()
+                return
+            }
             await updatePropertyStatus(propertyId, newStatus)
             await loadProperties()
         }

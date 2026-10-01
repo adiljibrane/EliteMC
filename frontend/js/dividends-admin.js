@@ -94,7 +94,7 @@ export const previewDividendDistribution = async (propertyId, distributableAmoun
         profiles:user_id (full_name, email)
       `)
       .eq('property_id', propertyId)
-      .in('status', ['SETTLED_OFFCHAIN', 'ONCHAIN_SETTLED'])
+      .eq('status', 'SETTLED')
 
     if (error) throw error
 

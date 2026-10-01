@@ -207,8 +207,7 @@ export const getStatusBadge = (status) => {
     // Property statuses
     'DRAFT': { label: 'Draft', color: 'bg-gray-200 text-gray-700' },
     'OPEN': { label: 'Open', color: 'bg-green-200 text-green-800' },
-    'READY_TO_MINT': { label: 'Ready to Mint', color: 'bg-blue-200 text-blue-800' },
-    'MINTED': { label: 'Minted', color: 'bg-purple-200 text-purple-800' },
+    'FUNDED': { label: 'Funded', color: 'bg-blue-200 text-blue-800' },
     'CLOSED': { label: 'Closed', color: 'bg-gray-200 text-gray-700' },
 
     // Order statuses
@@ -219,8 +218,7 @@ export const getStatusBadge = (status) => {
 
     // Allocation statuses
     'RESERVED': { label: 'Reserved', color: 'bg-yellow-200 text-yellow-800' },
-    'SETTLED_OFFCHAIN': { label: 'Settled', color: 'bg-green-200 text-green-800' },
-    'ONCHAIN_SETTLED': { label: 'On-Chain', color: 'bg-purple-200 text-purple-800' },
+    'SETTLED': { label: 'Settled', color: 'bg-green-200 text-green-800' },
     'REVOKED': { label: 'Revoked', color: 'bg-red-200 text-red-800' },
 
     // Deposit statuses

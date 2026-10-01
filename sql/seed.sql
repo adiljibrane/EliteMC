@@ -18,15 +18,15 @@
 -- =====================================================
 
 -- Admin user (replace with actual UUID)
-INSERT INTO profiles (user_id, full_name, email, phone, kyc_status, wallet_ss58, created_at) VALUES
-('00000000-0000-0000-0000-000000000001', 'Admin User', 'admin@elitemc.mu', '+230 5001 0001', 'APPROVED', '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY', NOW())
+INSERT INTO profiles (user_id, full_name, email, phone, kyc_status, created_at) VALUES
+('00000000-0000-0000-0000-000000000001', 'Admin User', 'admin@elitemc.mu', '+230 5001 0001', 'APPROVED', NOW())
 ON CONFLICT (user_id) DO NOTHING;
 
 -- Regular users (replace with actual UUIDs)
-INSERT INTO profiles (user_id, full_name, email, phone, kyc_status, wallet_ss58, created_at) VALUES
-('00000000-0000-0000-0000-000000000002', 'Alice Dupont', 'alice@example.com', '+230 5002 0002', 'APPROVED', '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty', NOW()),
-('00000000-0000-0000-0000-000000000003', 'Bob Chen', 'bob@example.com', '+230 5003 0003', 'APPROVED', NULL, NOW()),
-('00000000-0000-0000-0000-000000000004', 'Charlie Kumar', 'charlie@example.com', '+230 5004 0004', 'PENDING', NULL, NOW())
+INSERT INTO profiles (user_id, full_name, email, phone, kyc_status, created_at) VALUES
+('00000000-0000-0000-0000-000000000002', 'Alice Dupont', 'alice@example.com', '+230 5002 0002', 'APPROVED', NOW()),
+('00000000-0000-0000-0000-000000000003', 'Bob Chen', 'bob@example.com', '+230 5003 0003', 'APPROVED', NOW()),
+('00000000-0000-0000-0000-000000000004', 'Charlie Kumar', 'charlie@example.com', '+230 5004 0004', 'PENDING', NOW())
 ON CONFLICT (user_id) DO NOTHING;
 
 -- =====================================================
@@ -46,7 +46,7 @@ ON CONFLICT (user_id) DO NOTHING;
 
 INSERT INTO properties (id, title, location, description, images, price_per_lot, total_lots, min_lot_purchase, status, created_by, created_at) VALUES
 (
-    'prop-0001-0000-0000-0000-000000000001',
+    'a1000000-0000-0000-0000-000000000001',
     'Luxury Beachfront Apartments',
     'Grand Baie, Mauritius',
     'Premium beachfront property with 24/7 security, infinity pool, and private beach access. High rental demand in tourist area.',
@@ -59,7 +59,7 @@ INSERT INTO properties (id, title, location, description, images, price_per_lot,
     NOW()
 ),
 (
-    'prop-0002-0000-0000-0000-000000000002',
+    'a1000000-0000-0000-0000-000000000002',
     'City Center Office Complex',
     'Port Louis, Mauritius',
     'Modern office space in the heart of Port Louis. Fully leased to multinational corporations with stable rental income.',
@@ -72,7 +72,7 @@ INSERT INTO properties (id, title, location, description, images, price_per_lot,
     NOW()
 ),
 (
-    'prop-0003-0000-0000-0000-000000000003',
+    'a1000000-0000-0000-0000-000000000003',
     'Residential Villa Estate',
     'Flic en Flac, Mauritius',
     'Exclusive villa estate with ocean views. Perfect for families and retirees. Strong appreciation potential.',
@@ -107,20 +107,20 @@ ON CONFLICT (user_id) DO NOTHING;
 
 -- Alice's orders
 INSERT INTO orders (id, user_id, property_id, lots, unit_price_mur, status, created_at, paid_at) VALUES
-('order-001-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', 'prop-0001-0000-0000-0000-000000000001', 3, '50000.00', 'PAID', NOW() - INTERVAL '5 days', NOW() - INTERVAL '5 days'),
-('order-002-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002', 'prop-0002-0000-0000-0000-000000000002', 2, '75000.00', 'PAID', NOW() - INTERVAL '3 days', NOW() - INTERVAL '3 days')
+('b1000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', 'a1000000-0000-0000-0000-000000000001', 3, '50000.00', 'PAID', NOW() - INTERVAL '5 days', NOW() - INTERVAL '5 days'),
+('b1000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002', 'a1000000-0000-0000-0000-000000000002', 2, '75000.00', 'PAID', NOW() - INTERVAL '3 days', NOW() - INTERVAL '3 days')
 ON CONFLICT (id) DO NOTHING;
 
 -- Bob's orders
 INSERT INTO orders (id, user_id, property_id, lots, unit_price_mur, status, created_at, paid_at) VALUES
-('order-003-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000003', 'prop-0001-0000-0000-0000-000000000001', 5, '50000.00', 'PAID', NOW() - INTERVAL '4 days', NOW() - INTERVAL '4 days')
+('b1000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000003', 'a1000000-0000-0000-0000-000000000001', 5, '50000.00', 'PAID', NOW() - INTERVAL '4 days', NOW() - INTERVAL '4 days')
 ON CONFLICT (id) DO NOTHING;
 
 -- Allocations
 INSERT INTO property_allocations (id, user_id, property_id, lots, status, order_id, created_at) VALUES
-('alloc-001-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', 'prop-0001-0000-0000-0000-000000000001', 3, 'SETTLED_OFFCHAIN', 'order-001-0000-0000-0000-000000000001', NOW() - INTERVAL '5 days'),
-('alloc-002-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002', 'prop-0002-0000-0000-0000-000000000002', 2, 'SETTLED_OFFCHAIN', 'order-002-0000-0000-0000-000000000002', NOW() - INTERVAL '3 days'),
-('alloc-003-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000003', 'prop-0001-0000-0000-0000-000000000001', 5, 'SETTLED_OFFCHAIN', 'order-003-0000-0000-0000-000000000003', NOW() - INTERVAL '4 days')
+('c1000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', 'a1000000-0000-0000-0000-000000000001', 3, 'SETTLED', 'b1000000-0000-0000-0000-000000000001', NOW() - INTERVAL '5 days'),
+('c1000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002', 'a1000000-0000-0000-0000-000000000002', 2, 'SETTLED', 'b1000000-0000-0000-0000-000000000002', NOW() - INTERVAL '3 days'),
+('c1000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000003', 'a1000000-0000-0000-0000-000000000001', 5, 'SETTLED', 'b1000000-0000-0000-0000-000000000003', NOW() - INTERVAL '4 days')
 ON CONFLICT (id) DO NOTHING;
 
 -- =====================================================
@@ -129,7 +129,7 @@ ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO bank_deposits (id, user_id, bank_ref, amount_mur, received_date, proof_url, status, matched_by, matched_at, created_at) VALUES
 (
-    'deposit-001-0000-0000-0000-000000001',
+    'd1000000-0000-0000-0000-000000000001',
     '00000000-0000-0000-0000-000000000002',
     'MCB-20250112-001',
     '250000.00',
@@ -141,7 +141,7 @@ INSERT INTO bank_deposits (id, user_id, bank_ref, amount_mur, received_date, pro
     NOW() - INTERVAL '7 days'
 ),
 (
-    'deposit-002-0000-0000-0000-000000002',
+    'd1000000-0000-0000-0000-000000000002',
     '00000000-0000-0000-0000-000000000003',
     'MCB-20250112-002',
     '500000.00',
@@ -153,7 +153,7 @@ INSERT INTO bank_deposits (id, user_id, bank_ref, amount_mur, received_date, pro
     NOW() - INTERVAL '6 days'
 ),
 (
-    'deposit-003-0000-0000-0000-000000003',
+    'd1000000-0000-0000-0000-000000000003',
     '00000000-0000-0000-0000-000000000004',
     'MCB-20250112-003',
     '100000.00',
@@ -172,15 +172,15 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Alice's ledger
 INSERT INTO fiat_ledger (user_id, direction, amount_mur, reason, ref_table, ref_id, created_at) VALUES
-('00000000-0000-0000-0000-000000000002', 'CREDIT', '250000.00', 'Bank deposit matched - Ref: MCB-20250112-001', 'bank_deposits', 'deposit-001-0000-0000-0000-000000001', NOW() - INTERVAL '6 days'),
-('00000000-0000-0000-0000-000000000002', 'DEBIT', '150000.00', 'Purchase of 3 lots for property', 'orders', 'order-001-0000-0000-0000-000000000001', NOW() - INTERVAL '5 days'),
-('00000000-0000-0000-0000-000000000002', 'DEBIT', '150000.00', 'Purchase of 2 lots for property', 'orders', 'order-002-0000-0000-0000-000000000002', NOW() - INTERVAL '3 days')
+('00000000-0000-0000-0000-000000000002', 'CREDIT', '250000.00', 'Bank deposit matched - Ref: MCB-20250112-001', 'bank_deposits', 'd1000000-0000-0000-0000-000000000001', NOW() - INTERVAL '6 days'),
+('00000000-0000-0000-0000-000000000002', 'DEBIT', '150000.00', 'Purchase of 3 lots for property', 'orders', 'b1000000-0000-0000-0000-000000000001', NOW() - INTERVAL '5 days'),
+('00000000-0000-0000-0000-000000000002', 'DEBIT', '150000.00', 'Purchase of 2 lots for property', 'orders', 'b1000000-0000-0000-0000-000000000002', NOW() - INTERVAL '3 days')
 ON CONFLICT DO NOTHING;
 
 -- Bob's ledger
 INSERT INTO fiat_ledger (user_id, direction, amount_mur, reason, ref_table, ref_id, created_at) VALUES
-('00000000-0000-0000-0000-000000000003', 'CREDIT', '500000.00', 'Bank deposit matched - Ref: MCB-20250112-002', 'bank_deposits', 'deposit-002-0000-0000-0000-000000002', NOW() - INTERVAL '5 days'),
-('00000000-0000-0000-0000-000000000003', 'DEBIT', '250000.00', 'Purchase of 5 lots for property', 'orders', 'order-003-0000-0000-0000-000000000003', NOW() - INTERVAL '4 days')
+('00000000-0000-0000-0000-000000000003', 'CREDIT', '500000.00', 'Bank deposit matched - Ref: MCB-20250112-002', 'bank_deposits', 'd1000000-0000-0000-0000-000000000002', NOW() - INTERVAL '5 days'),
+('00000000-0000-0000-0000-000000000003', 'DEBIT', '250000.00', 'Purchase of 5 lots for property', 'orders', 'b1000000-0000-0000-0000-000000000003', NOW() - INTERVAL '4 days')
 ON CONFLICT DO NOTHING;
 
 -- =====================================================
@@ -189,8 +189,8 @@ ON CONFLICT DO NOTHING;
 
 INSERT INTO dividend_statements (id, property_id, period_start, period_end, gross_income_mur, expenses_mur, created_at, created_by) VALUES
 (
-    'dividend-001-0000-0000-0000-000001',
-    'prop-0001-0000-0000-0000-000000000001',
+    'e1000000-0000-0000-0000-000000000001',
+    'a1000000-0000-0000-0000-000000000001',
     '2025-01-01',
     '2025-01-31',
     '50000.00',
@@ -207,8 +207,8 @@ ON CONFLICT (id) DO NOTHING;
 -- Bob's share: (5/8) * 45000 = 28,125
 
 INSERT INTO dividend_payouts (id, statement_id, user_id, amount_mur, payout_method, payout_ref, created_at) VALUES
-('payout-001-0000-0000-0000-000000001', 'dividend-001-0000-0000-0000-000001', '00000000-0000-0000-0000-000000000002', '16875.00', 'INTERNAL_CREDIT', NULL, NOW() - INTERVAL '1 day'),
-('payout-002-0000-0000-0000-000000002', 'dividend-001-0000-0000-0000-000001', '00000000-0000-0000-0000-000000000003', '28125.00', 'INTERNAL_CREDIT', NULL, NOW() - INTERVAL '1 day')
+('f1000000-0000-0000-0000-000000000001', 'e1000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', '16875.00', 'INTERNAL_CREDIT', NULL, NOW() - INTERVAL '1 day'),
+('f1000000-0000-0000-0000-000000000002', 'e1000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000003', '28125.00', 'INTERNAL_CREDIT', NULL, NOW() - INTERVAL '1 day')
 ON CONFLICT (id) DO NOTHING;
 
 -- =====================================================
@@ -216,11 +216,11 @@ ON CONFLICT (id) DO NOTHING;
 -- =====================================================
 
 INSERT INTO audit_log (actor_user_id, action, target_table, target_id, details, created_at) VALUES
-('00000000-0000-0000-0000-000000000001', 'match_deposit', 'bank_deposits', 'deposit-001-0000-0000-0000-000000001', '{"amount": 250000, "user_id": "00000000-0000-0000-0000-000000000002"}'::jsonb, NOW() - INTERVAL '6 days'),
-('00000000-0000-0000-0000-000000000001', 'match_deposit', 'bank_deposits', 'deposit-002-0000-0000-0000-000000002', '{"amount": 500000, "user_id": "00000000-0000-0000-0000-000000000003"}'::jsonb, NOW() - INTERVAL '5 days'),
-('00000000-0000-0000-0000-000000000002', 'capture_order', 'orders', 'order-001-0000-0000-0000-000000000001', '{"amount": 150000, "lots": 3}'::jsonb, NOW() - INTERVAL '5 days'),
-('00000000-0000-0000-0000-000000000003', 'capture_order', 'orders', 'order-003-0000-0000-0000-000000000003', '{"amount": 250000, "lots": 5}'::jsonb, NOW() - INTERVAL '4 days'),
-('00000000-0000-0000-0000-000000000001', 'calculate_dividends', 'dividend_statements', 'dividend-001-0000-0000-0000-000001', '{"distributable": 45000, "payouts_count": 2}'::jsonb, NOW() - INTERVAL '1 day')
+('00000000-0000-0000-0000-000000000001', 'match_deposit', 'bank_deposits', 'd1000000-0000-0000-0000-000000000001', '{"amount": 250000, "user_id": "00000000-0000-0000-0000-000000000002"}'::jsonb, NOW() - INTERVAL '6 days'),
+('00000000-0000-0000-0000-000000000001', 'match_deposit', 'bank_deposits', 'd1000000-0000-0000-0000-000000000002', '{"amount": 500000, "user_id": "00000000-0000-0000-0000-000000000003"}'::jsonb, NOW() - INTERVAL '5 days'),
+('00000000-0000-0000-0000-000000000002', 'capture_order', 'orders', 'b1000000-0000-0000-0000-000000000001', '{"amount": 150000, "lots": 3}'::jsonb, NOW() - INTERVAL '5 days'),
+('00000000-0000-0000-0000-000000000003', 'capture_order', 'orders', 'b1000000-0000-0000-0000-000000000003', '{"amount": 250000, "lots": 5}'::jsonb, NOW() - INTERVAL '4 days'),
+('00000000-0000-0000-0000-000000000001', 'calculate_dividends', 'dividend_statements', 'e1000000-0000-0000-0000-000000000001', '{"distributable": 45000, "payouts_count": 2}'::jsonb, NOW() - INTERVAL '1 day')
 ON CONFLICT DO NOTHING;
 
 -- =====================================================

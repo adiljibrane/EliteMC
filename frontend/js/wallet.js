@@ -246,7 +246,7 @@ export const fetchPortfolio = async () => {
 
 export const renderPortfolio = (portfolio, container) => {
   if (!portfolio || portfolio.length === 0) {
-    showEmptyState(container, 'No investments yet', '📊')
+    showEmptyState(container, 'No property lots yet', '📊')
     return
   }
 
@@ -268,7 +268,7 @@ export const renderPortfolio = (portfolio, container) => {
               <p class="text-xl font-bold text-indigo-600">${item.total_lots}</p>
             </div>
             <div>
-              <p class="text-gray-600">Total Invested</p>
+              <p class="text-gray-600">Total Paid</p>
               <p class="text-xl font-bold text-gray-800">${formatMUR(item.total_invested)}</p>
             </div>
           </div>

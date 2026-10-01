@@ -142,12 +142,12 @@ serve(async (req) => {
       throw new Error(`Failed to create dividend statement: ${statementError?.message}`)
     }
 
-    // Fetch eligible allocations (SETTLED_OFFCHAIN or ONCHAIN_SETTLED)
+    // Fetch eligible allocations (SETTLED: property funded)
     const { data: allocations, error: allocationsError } = await supabaseClient
       .from('property_allocations')
       .select('user_id, lots')
       .eq('property_id', input.property_id)
-      .in('status', ['SETTLED_OFFCHAIN', 'ONCHAIN_SETTLED']) as { data: AllocationData[] | null, error: any }
+      .eq('status', 'SETTLED') as { data: AllocationData[] | null, error: any }
 
     if (allocationsError) {
       throw new Error(`Failed to fetch allocations: ${allocationsError.message}`)
@@ -157,7 +157,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({
           error: 'No eligible allocations found for dividend distribution',
-          hint: 'Allocations must be in SETTLED_OFFCHAIN or ONCHAIN_SETTLED status',
+          hint: 'Allocations are settled when the property is marked FUNDED',
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )

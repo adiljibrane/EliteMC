@@ -20,7 +20,6 @@ export interface Database {
           email: string
           phone: string | null
           kyc_status: 'PENDING' | 'APPROVED' | 'REJECTED'
-          wallet_ss58: string | null
           created_at: string
           updated_at: string
         }
@@ -30,7 +29,6 @@ export interface Database {
           email: string
           phone?: string | null
           kyc_status?: 'PENDING' | 'APPROVED' | 'REJECTED'
-          wallet_ss58?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -40,7 +38,6 @@ export interface Database {
           email?: string
           phone?: string | null
           kyc_status?: 'PENDING' | 'APPROVED' | 'REJECTED'
-          wallet_ss58?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -149,9 +146,7 @@ export interface Database {
           total_lots: number
           min_lot_purchase: number
           target_raise_mur: string
-          status: 'DRAFT' | 'OPEN' | 'READY_TO_MINT' | 'MINTED' | 'CLOSED'
-          asset_hub_asset_id: number | null
-          decimals: number | null
+          status: 'DRAFT' | 'OPEN' | 'FUNDED' | 'CLOSED'
           created_by: string
           created_at: string
           updated_at: string
@@ -165,9 +160,7 @@ export interface Database {
           price_per_lot: string
           total_lots: number
           min_lot_purchase?: number
-          status?: 'DRAFT' | 'OPEN' | 'READY_TO_MINT' | 'MINTED' | 'CLOSED'
-          asset_hub_asset_id?: number | null
-          decimals?: number | null
+          status?: 'DRAFT' | 'OPEN' | 'FUNDED' | 'CLOSED'
           created_by: string
           created_at?: string
           updated_at?: string
@@ -181,9 +174,7 @@ export interface Database {
           price_per_lot?: string
           total_lots?: number
           min_lot_purchase?: number
-          status?: 'DRAFT' | 'OPEN' | 'READY_TO_MINT' | 'MINTED' | 'CLOSED'
-          asset_hub_asset_id?: number | null
-          decimals?: number | null
+          status?: 'DRAFT' | 'OPEN' | 'FUNDED' | 'CLOSED'
           created_by?: string
           created_at?: string
           updated_at?: string
@@ -228,59 +219,27 @@ export interface Database {
           user_id: string
           property_id: string
           lots: number
-          status: 'RESERVED' | 'SETTLED_OFFCHAIN' | 'ONCHAIN_SETTLED' | 'REVOKED'
+          status: 'RESERVED' | 'SETTLED' | 'REVOKED'
           order_id: string | null
           created_at: string
-          onchain_tx_hash: string | null
-          onchain_block: number | null
         }
         Insert: {
           id?: string
           user_id: string
           property_id: string
           lots: number
-          status?: 'RESERVED' | 'SETTLED_OFFCHAIN' | 'ONCHAIN_SETTLED' | 'REVOKED'
+          status?: 'RESERVED' | 'SETTLED' | 'REVOKED'
           order_id?: string | null
           created_at?: string
-          onchain_tx_hash?: string | null
-          onchain_block?: number | null
         }
         Update: {
           id?: string
           user_id?: string
           property_id?: string
           lots?: number
-          status?: 'RESERVED' | 'SETTLED_OFFCHAIN' | 'ONCHAIN_SETTLED' | 'REVOKED'
+          status?: 'RESERVED' | 'SETTLED' | 'REVOKED'
           order_id?: string | null
           created_at?: string
-          onchain_tx_hash?: string | null
-          onchain_block?: number | null
-        }
-      }
-      token_mint_batches: {
-        Row: {
-          id: string
-          property_id: string
-          asset_id: number
-          total_minted: number
-          signer_wallet: string
-          extrinsic_hash: string | null
-          status: 'PLANNED' | 'SUBMITTED' | 'CONFIRMED' | 'FAILED'
-          created_at: string
-          confirmed_at: string | null
-        }
-      }
-      token_transfers: {
-        Row: {
-          id: string
-          property_id: string
-          user_id: string
-          asset_id: number
-          amount: number
-          extrinsic_hash: string | null
-          confirmed: boolean
-          created_at: string
-          confirmed_at: string | null
         }
       }
       dividend_statements: {
@@ -359,10 +318,9 @@ export interface Database {
       kyc_status_enum: 'PENDING' | 'APPROVED' | 'REJECTED'
       deposit_status_enum: 'PENDING' | 'MATCHED' | 'REJECTED'
       ledger_direction_enum: 'CREDIT' | 'DEBIT'
-      property_status_enum: 'DRAFT' | 'OPEN' | 'READY_TO_MINT' | 'MINTED' | 'CLOSED'
+      property_status_enum: 'DRAFT' | 'OPEN' | 'FUNDED' | 'CLOSED'
       order_status_enum: 'PENDING_PAYMENT' | 'PAID' | 'CANCELLED' | 'FAILED'
-      allocation_status_enum: 'RESERVED' | 'SETTLED_OFFCHAIN' | 'ONCHAIN_SETTLED' | 'REVOKED'
-      mint_batch_status_enum: 'PLANNED' | 'SUBMITTED' | 'CONFIRMED' | 'FAILED'
+      allocation_status_enum: 'RESERVED' | 'SETTLED' | 'REVOKED'
       payout_method_enum: 'BANK_TRANSFER' | 'INTERNAL_CREDIT'
     }
   }
